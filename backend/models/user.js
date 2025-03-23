@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { getAllBoards, deleteBoard } from "./board";
 
 const userSchema = new mongoose.Schema({
 	username: {
@@ -37,6 +38,7 @@ async function updateUser(id, userData) {
 			new: true,
 			runValidators: true,
 		});
+		updatedUser.save();
 		return updatedUser;
 	} catch (error) {
 		throw new Error(`Error updating user with id ${id}: ${error.message}`);
@@ -45,8 +47,13 @@ async function updateUser(id, userData) {
 
 async function removeUser(id) {
 	try {
+		const boards = await getAllBoards(id);
+		for (const board of boards) {
+			await deleteBoard(board._id);
+		}
+
 		const deletedUser = await User.findByIdAndDelete(id);
-		return deletedUser.acknowledged;
+		return deletedUser;
 	} catch (error) {
 		throw new Error(`Error deleting user with id ${id}: ${error.message}`);
 	}
