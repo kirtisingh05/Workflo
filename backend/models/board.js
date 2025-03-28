@@ -39,9 +39,10 @@ async function getBoardById(id) {
 	}
 }
 
-async function getAllBoards(owner_id) {
+async function getAllBoards(owner_id, filter = {}) {
 	try {
-		const boards = await Board.find({ owner: owner_id });
+		const query = { owner: owner_id, ...filter };
+		const boards = await Board.find(query);
 		return boards;
 	} catch (error) {
 		throw new Error(
@@ -95,10 +96,27 @@ async function deleteBoard(id) {
 	}
 }
 
+async function deleteBoards(board_ids) {
+	try {
+		if (!Array.isArray(board_ids) || board_ids.length === 0) {
+			throw new Error("board_ids must be a non-empty array");
+		}
+
+		const deletedBoards = await Board.deleteMany({
+			_id: { $in: board_ids },
+		});
+
+		return deletedBoards;
+	} catch (error) {
+		throw new Error("Error deleting tasks");
+	}
+}
+
 export default {
 	getBoardById,
 	getAllBoards,
 	createBoard,
 	updateBoard,
 	deleteBoard,
+	deleteBoards,
 };

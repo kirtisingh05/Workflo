@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { getAllBoards, deleteBoard } from "./board";
+import { getAllBoards, deleteBoards } from "./board";
 
 const userSchema = new mongoose.Schema({
 	username: {
@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model("User", userSchema);
 
-async function getUserById(id) {
+async function getUser(id) {
 	try {
 		const user = await User.findById(id);
 		return user;
@@ -48,9 +48,9 @@ async function updateUser(id, userData) {
 async function removeUser(id) {
 	try {
 		const boards = await getAllBoards(id);
-		for (const board of boards) {
-			await deleteBoard(board._id);
-		}
+		const boardIds = boards.map((board) => board._id);
+
+		await deleteBoards(boardIds);
 
 		const deletedUser = await User.findByIdAndDelete(id);
 		return deletedUser;
@@ -60,7 +60,7 @@ async function removeUser(id) {
 }
 
 export default {
-	getUserById,
+	getUser,
 	updateUser,
 	removeUser,
 };
