@@ -10,6 +10,18 @@ const taskSchema = new mongoose.Schema(
 		description: {
 			type: String,
 		},
+		subtasks: [
+			{
+				description: {
+					type: String,
+					required: true,
+				},
+				completed: {
+					type: Boolean,
+					default: false,
+				},
+			},
+		],
 		status: {
 			type: String,
 			enum: ["NOT STARTED", "IN PROGRESS", "COMPLETED"],
@@ -27,12 +39,12 @@ const taskSchema = new mongoose.Schema(
 		},
 		created_by: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
+			ref: "Contributor",
 			required: true,
 		},
 		assigned_to: {
 			type: mongoose.Schema.Types.ObjectId,
-			ref: "User",
+			ref: "Contributor",
 			required: true,
 		},
 	},
@@ -41,9 +53,18 @@ const taskSchema = new mongoose.Schema(
 
 const Task = mongoose.model("Task", taskSchema);
 
+async function getTaskById(id) {
+	try {
+		const task = await Task.findById(id);
+		return task;
+	} catch (error) {
+		throw new Error(`Error finding task with id ${id}: ${error.message}`);
+	}
+}
+
 async function getAllTasks(board_id) {
 	try {
-		const tasks = Task.find({ board: board_id });
+		const tasks = await Task.find({ board: board_id });
 		return tasks;
 	} catch (error) {
 		throw new Error(
@@ -112,6 +133,7 @@ async function deleteTasks(task_ids) {
 }
 
 export default {
+	getTaskById,
 	getAllTasks,
 	createTask,
 	updateTask,

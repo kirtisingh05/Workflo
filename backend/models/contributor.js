@@ -1,15 +1,14 @@
 import mongoose from "mongoose";
 
-// Define the Contributor schema
 const contributorSchema = new mongoose.Schema({
 	user: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "User", // assuming there is a User model
+		ref: "User",
 		required: true,
 	},
 	board: {
 		type: mongoose.Schema.Types.ObjectId,
-		ref: "Board", // assuming there is a Board model
+		ref: "Board",
 		required: true,
 	},
 	role: {
@@ -19,22 +18,23 @@ const contributorSchema = new mongoose.Schema({
 	},
 });
 
-// Create the Contributor model
 const Contributor = mongoose.model("Contributor", contributorSchema);
 
-// Method to get all contributors for a specific board
-async function getAllContributors(board_id) {
+async function getAllContributors(board_id, filter = {}) {
 	try {
-		const contributors = await Contributor.find({ board: board_id });
+		const query = { board: board_id, ...filter };
+		const contributors = await Contributor.find(query);
 		return contributors;
 	} catch (error) {
-		throw new Error(`Error fetching contributors for board ${board_id}: ${error.message}`);
+		throw new Error(
+			`Error fetching contributors for board ${board_id}: ${error.message}`,
+		);
 	}
 }
 
-// Method to create a new contributor
-async function createContributor(user_id, board_id, role) {
+async function createContributor(contributorData) {
 	try {
+		const { user_id, board_id, role } = contributorData;
 		const contributor = new Contributor({
 			user: user_id,
 			board: board_id,
@@ -47,30 +47,32 @@ async function createContributor(user_id, board_id, role) {
 	}
 }
 
-// Method to update a contributor by id
-async function updateContributor(contributor_id, updateData) {
+async function updateContributor(contributor_id, contributorData) {
 	try {
-		const updatedContributor = await Contributor.findByIdAndUpdate(contributor_id, updateData, {
-			new: true,
-			runValidators: true,
-		});
+		const updatedContributor = await Contributor.findByIdAndUpdate(
+			contributor_id,
+			contributorData,
+			{
+				new: true,
+				runValidators: true,
+			},
+		);
 		return updatedContributor;
 	} catch (error) {
-		throw new Error(`Error updating contributor with id ${contributor_id}: ${error.message}`);
+		throw new Error(
+			`Error updating contributor with id ${contributor_id}: ${error.message}`,
+		);
 	}
 }
 
-// Method to delete a contributor by id
 async function deleteContributor(id) {
 	try {
 		const deletedContributor = await Contributor.findByIdAndDelete(id);
-		if (deletedContributor) {
-			return { message: "Contributor deleted successfully." };
-		} else {
-			return { message: "Contributor not found." };
-		}
+		return deletedContributor;
 	} catch (error) {
-		throw new Error(`Error deleting contributor with id ${id}: ${error.message}`);
+		throw new Error(
+			`Error deleting contributor with id ${id}: ${error.message}`,
+		);
 	}
 }
 
