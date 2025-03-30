@@ -53,7 +53,7 @@ const taskSchema = new mongoose.Schema(
 
 const Task = mongoose.model("Task", taskSchema);
 
-async function getTaskById(id) {
+async function get(id) {
 	try {
 		const task = await Task.findById(id);
 		return task;
@@ -62,7 +62,7 @@ async function getTaskById(id) {
 	}
 }
 
-async function getAllTasks(board_id) {
+async function getAll(board_id) {
 	try {
 		const tasks = await Task.find({ board: board_id });
 		return tasks;
@@ -73,7 +73,7 @@ async function getAllTasks(board_id) {
 	}
 }
 
-async function createTask(taskData) {
+async function create(taskData) {
 	try {
 		const { title, description, status, deadline, created_by, assigned_to } =
 			taskData;
@@ -94,7 +94,7 @@ async function createTask(taskData) {
 	}
 }
 
-async function updateTask(id, taskData) {
+async function update(id, taskData) {
 	try {
 		const updatedTask = await Task.findByIdAndUpdate(id, taskData, {
 			new: true,
@@ -107,7 +107,7 @@ async function updateTask(id, taskData) {
 	}
 }
 
-async function deleteTask(id) {
+async function remove(id) {
 	try {
 		const deletedTask = await Task.findByIdAndDelete(id);
 		return deletedTask;
@@ -116,7 +116,7 @@ async function deleteTask(id) {
 	}
 }
 
-async function deleteTasks(task_ids) {
+async function removeMany(task_ids) {
 	try {
 		if (!Array.isArray(task_ids) || task_ids.length === 0) {
 			throw new Error("task_ids must be a non-empty array");
@@ -133,10 +133,10 @@ async function deleteTasks(task_ids) {
 }
 
 export default {
-	getTaskById,
-	getAllTasks,
-	createTask,
-	updateTask,
-	deleteTask,
-	deleteTasks,
+	get,
+	getAll,
+	create,
+	update,
+	remove,
+	removeMany,
 };
