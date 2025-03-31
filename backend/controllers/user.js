@@ -1,7 +1,5 @@
 import User from "../models/user.js";
 
-async function getUser(req, res) {}
-
 async function updateUser(req, res) {
   const { id } = req.params;
   const { username, email, profilePicture } = req.body;
@@ -20,10 +18,25 @@ async function updateUser(req, res) {
   }
 }
 
-async function removeUser(req, res) {}
+async function removeUser(req, res) {
+  const { id } = req.params;
+
+  try {
+    const removedUser = await User.remove(id);
+    if (!removedUser) {
+      return res
+        .status(404)
+        .json({ message: `User with id ${id} not found` });
+    }
+    res
+      .status(200)
+      .json({ data: removedUser, message: `Removed user with id ${id}` });
+  } catch (error) {
+    res.status(500).json({ message: "Error while removing user" });
+  }
+}
 
 export default {
-  getUser,
   updateUser,
   removeUser,
 };
