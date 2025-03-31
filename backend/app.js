@@ -5,6 +5,9 @@ import path from "path";
 import "dotenv/config";
 
 import userRouter from "./routes/user.js";
+import userRouter from "./routes/board.js";
+import userRouter from "./routes/contributor.js";
+import userRouter from "./routes/task.js";
 
 const app = express();
 
