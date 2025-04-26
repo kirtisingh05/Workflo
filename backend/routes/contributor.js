@@ -12,8 +12,12 @@ router.get("/fetch/:board_id", contributorController.fetchContributorsByBoard);
 // POST endpoints:
 // /contributor/update -> Creates a contributor
 // /contributor/update/:id -> Updates a contributor by id
+// /contributor/accept/:id -> Accepts an invitation by id
+// /contributor/decline/:id -> Declines an invitation by id
 router.post("/update", contributorController.createContributor);
 router.post("/update/:id", contributorController.updateContributor);
+router.post("/accept/:id", contributorController.acceptInvitation);
+router.post("/decline/:id", contributorController.declineInvitation);
 
 // DELETE endpoint:
 // /contributor/delete/:id -> Deletes a contributor by id

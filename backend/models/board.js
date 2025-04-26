@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { getAllTasks } from "./task";
 
 const boardSchema = new mongoose.Schema({
   title: {
@@ -14,25 +13,22 @@ const boardSchema = new mongoose.Schema({
     ref: "User",
     required: true,
   },
-  contributors: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Contributor",
-    },
-  ],
-  tasks: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Task",
-    },
-  ],
-});
+  isShared: {
+    type: Boolean,
+    default: false,
+  },
+  isTrashed: {
+    type: Boolean,
+    default: false,
+  },
+}, { timestamps: true });
 
 const Board = mongoose.model("Board", boardSchema);
 
 async function get(id) {
   try {
-    const board = await Board.findById(id);
+    const board = await Board.findById(id)
+      .populate("owner", "name email");
     return board;
   } catch (error) {
     throw new Error(`Error finding board with id ${id}: ${error.message}`);
@@ -42,7 +38,9 @@ async function get(id) {
 async function getAll(owner_id, filter = {}) {
   try {
     const query = { owner: owner_id, ...filter };
-    const boards = await Board.find(query);
+    const boards = await Board.find(query)
+      .populate("owner", "name email")
+      .sort({ updatedAt: -1 });
     return boards;
   } catch (error) {
     throw new Error(
@@ -51,19 +49,35 @@ async function getAll(owner_id, filter = {}) {
   }
 }
 
+async function searchBoards(searchQuery, owner_id) {
+  try {
+    const query = {
+      owner: owner_id,
+      isTrashed: false,
+      $or: [
+        { title: { $regex: searchQuery, $options: 'i' } },
+        { description: { $regex: searchQuery, $options: 'i' } }
+      ]
+    };
+    
+    const boards = await Board.find(query)
+      .populate("owner", "name email")
+      .sort({ updatedAt: -1 });
+    return boards;
+  } catch (error) {
+    throw new Error(`Error searching boards: ${error.message}`);
+  }
+}
+
 async function create(boardData) {
   try {
-    const { title, description, owner_id, contributor_ids, task_ids } =
-      boardData;
     const board = new Board({
-      title,
-      description,
-      owner: owner_id,
-      contributors: contributor_ids,
-      tasks: task_ids,
+      title: boardData.title,
+      description: boardData.description,
+      owner: boardData.owner_id,
     });
     await board.save();
-    return board._id;
+    return await get(board._id);
   } catch (error) {
     throw new Error(`Error creating board: ${error.message}`);
   }
@@ -71,11 +85,18 @@ async function create(boardData) {
 
 async function update(id, updateData) {
   try {
-    const updatedBoard = await Board.findByIdAndUpdate(id, updateData, {
-      new: true,
-      runValidators: true,
-    });
-    await updatedBoard.save();
+    const updatedBoard = await Board.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).populate("owner", "name email");
+    
+    if (!updatedBoard) {
+      throw new Error(`Board with id ${id} not found`);
+    }
     return updatedBoard;
   } catch (error) {
     throw new Error(`Error updating board with id ${id}: ${error.message}`);
@@ -91,19 +112,43 @@ async function remove(id) {
   }
 }
 
-async function removeMany(board_ids) {
+async function moveToTrash(id) {
   try {
-    if (!Array.isArray(board_ids) || board_ids.length === 0) {
-      throw new Error("board_ids must be a non-empty array");
+    const updatedBoard = await Board.findByIdAndUpdate(
+      id,
+      { isTrashed: true },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).populate("owner", "name email");
+    
+    if (!updatedBoard) {
+      throw new Error(`Board with id ${id} not found`);
     }
-
-    const deletedBoards = await Board.deleteMany({
-      _id: { $in: board_ids },
-    });
-
-    return deletedBoards;
+    return updatedBoard;
   } catch (error) {
-    throw new Error("Error deleting tasks");
+    throw new Error(`Error moving board to trash: ${error.message}`);
+  }
+}
+
+async function restoreFromTrash(id) {
+  try {
+    const updatedBoard = await Board.findByIdAndUpdate(
+      id,
+      { isTrashed: false },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).populate("owner", "name email");
+    
+    if (!updatedBoard) {
+      throw new Error(`Board with id ${id} not found`);
+    }
+    return updatedBoard;
+  } catch (error) {
+    throw new Error(`Error restoring board from trash: ${error.message}`);
   }
 }
 
@@ -113,5 +158,7 @@ export default {
   create,
   update,
   remove,
-  removeMany,
+  searchBoards,
+  moveToTrash,
+  restoreFromTrash,
 };

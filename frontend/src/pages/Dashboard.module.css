@@ -1,0 +1,346 @@
+/* Reset defaults */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Container styles with dark and light mode */
+.dashboardContainer {
+  padding: 2rem;
+  min-height: calc(100vh - 64px);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.lightMode {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.darkMode {
+  background-color: var(--dark-bg);
+  color: var(--dark-text);
+}
+
+/* Dashboard Header */
+.dashboardHeader {
+  margin-bottom: 2rem;
+}
+
+.headerContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.headerContent h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.newBoardBtn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newBoardBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.trashedBtn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.trashedBtn:hover,
+.trashedBtn.active {
+  background-color: var(--border-color);
+  color: var(--text-color);
+}
+
+/* Search Bar */
+.searchContainer {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.searchBar {
+  margin-bottom: 1rem;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-transparent);
+}
+
+/* Boards Grid */
+.boardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.5rem;
+  padding: 1rem 0;
+}
+
+/* Board Card */
+.boardCard {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.boardCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--card-shadow-hover);
+}
+
+.boardContent {
+  padding: 1.5rem;
+}
+
+.boardContent h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.boardContent p {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.boardMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.875rem;
+}
+
+.date {
+  color: var(--text-secondary);
+}
+
+.actionBtn {
+  background-color: transparent;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.actionBtn:hover {
+  background-color: var(--primary-transparent);
+}
+
+/* Create Board Card */
+.createBoardCard {
+  background-color: #fff;
+  border: 2px dashed #bbb;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #007bff;
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.createBoardCard:hover {
+  background-color: #fafafa;
+}
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.modalContent {
+  background-color: var(--modal-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 500px;
+}
+
+.modalContent h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+/* Form elements within modals */
+.formGroup {
+  margin-bottom: 1.5rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.formGroup input,
+.formGroup textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.formGroup input:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--primary-transparent);
+}
+
+/* Modal Action Buttons */
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.saveBtn,
+.cancelBtn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.saveBtn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+}
+
+.saveBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.cancelBtn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+}
+
+.cancelBtn:hover {
+  background-color: var(--border-color);
+}
+
+/* Loading state */
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  color: var(--text-color);
+  font-size: 1.2rem;
+}
+
+.darkMode .loadingContainer {
+  color: #ccc;
+}
+
+/* Error message */
+.error {
+  background-color: var(--error-bg);
+  color: var(--error-text);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.darkMode .error {
+  background-color: rgba(229, 62, 62, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboardContainer {
+    padding: 1rem;
+  }
+
+  .headerContent {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .headerActions {
+    width: 100%;
+  }
+
+  .searchContainer {
+    margin-top: 1rem;
+  }
+
+  .boardsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .modalContent {
+    width: 95%;
+    padding: 1.5rem;
+  }
+}

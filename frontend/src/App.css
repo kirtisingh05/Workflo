@@ -1,0 +1,263 @@
+:root {
+  --primary-color: #4a6fa5;
+  --primary-hover: #3a5a8c;
+  --secondary-color: #f0f4f8;
+  --text-color: #2d3748;
+  --border-color: #e2e8f0;
+  --light-bg: #ffffff;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  --transition-speed: 0.3s;
+  --border-radius: 10px;
+  --danger-color: #e53e3e;
+  --success-color: #38a169;
+  --warning-color: #dd6b20;
+}
+
+.dark-mode {
+  --primary-color: #6b8cb2;
+  --primary-hover: #7a9cc3;
+  --secondary-color: #2d3748;
+  --text-color: #f7fafc;
+  --border-color: #4a5568;
+  --light-bg: #1a202c;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--secondary-color);
+  transition: background-color var(--transition-speed) ease;
+}
+
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+  transition: color var(--transition-speed) ease;
+}
+
+a:hover {
+  color: var(--primary-hover);
+}
+
+button {
+  cursor: pointer;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: background-color var(--transition-speed) ease;
+}
+
+button:hover {
+  background-color: var(--primary-hover);
+}
+
+button.secondary {
+  background-color: transparent;
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+button.secondary:hover {
+  background-color: rgba(74, 111, 165, 0.1);
+}
+
+button.danger {
+  background-color: var(--danger-color);
+}
+
+button.danger:hover {
+  background-color: #c53030;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: var(--light-bg);
+  color: var(--text-color);
+  transition: border-color var(--transition-speed) ease;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.card {
+  background-color: var(--light-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
+  margin-bottom: 20px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-column {
+  flex-direction: column;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.mt-10 {
+  margin-top: 10px;
+}
+
+.mb-10 {
+  margin-bottom: 10px;
+}
+
+.mt-20 {
+  margin-top: 20px;
+}
+
+.mb-20 {
+  margin-bottom: 20px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: 500;
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-high {
+  background-color: #fed7d7;
+  color: #e53e3e;
+}
+
+.badge-medium {
+  background-color: #feebc8;
+  color: #dd6b20;
+}
+
+.badge-low {
+  background-color: #c6f6d5;
+  color: #38a169;
+}
+
+.badge-pending {
+  background-color: #bee3f8;
+  color: #3182ce;
+}
+
+.badge-inProgress {
+  background-color: #feebc8;
+  color: #dd6b20;
+}
+
+.badge-completed {
+  background-color: #c6f6d5;
+  color: #38a169;
+}
+
+.dark-mode .badge-high {
+  background-color: rgba(229, 62, 62, 0.2);
+}
+
+.dark-mode .badge-medium {
+  background-color: rgba(221, 107, 32, 0.2);
+}
+
+.dark-mode .badge-low {
+  background-color: rgba(56, 161, 105, 0.2);
+}
+
+.dark-mode .badge-pending {
+  background-color: rgba(49, 130, 206, 0.2);
+}
+
+.dark-mode .badge-inProgress {
+  background-color: rgba(221, 107, 32, 0.2);
+}
+
+.dark-mode .badge-completed {
+  background-color: rgba(56, 161, 105, 0.2);
+}
+
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 30px;
+}
+
+.header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}

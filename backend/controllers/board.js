@@ -3,14 +3,16 @@ import Board from "../models/board.js";
 // GET endpoints:
 // - /board/fetch/:id         -> Gets a board by id
 // - /board/fetch?query=...     -> Gets boards based on a search query
+// - /board/fetch?trashed=true -> Gets trashed boards
 async function fetchBoard(req, res) {
   const { id } = req.params;
-  const { query } = req.query;
+  const { query, trashed } = req.query;
+  const userId = req.user?._id; // Assuming user is attached by auth middleware
 
   try {
     if (id) {
-      // Fetch board by ID
-      const board = await Board.getById(id);
+      // Fetch single board by ID
+      const board = await Board.get(id);
       if (!board) {
         return res
           .status(404)
@@ -18,17 +20,21 @@ async function fetchBoard(req, res) {
       }
       return res
         .status(200)
-        .json({ data: board, message: `Board fetched successfully` });
-    } else if (query) {
-      // Fetch boards based on search query
-      const boards = await Board.search(query);
+        .json({ data: board, message: "Board fetched successfully" });
+    } else {
+      // Fetch boards with optional search and trash filter
+      if (query) {
+        const boards = await Board.searchBoards(query, userId);
+        return res
+          .status(200)
+          .json({ data: boards, message: "Boards fetched successfully" });
+      }
+
+      const filter = trashed === 'true' ? { isTrashed: true } : { isTrashed: false };
+      const boards = await Board.getAll(userId, filter);
       return res
         .status(200)
-        .json({ data: boards, message: `Boards fetched successfully` });
-    } else {
-      return res
-        .status(400)
-        .json({ message: "Please provide either a board id or a search query" });
+        .json({ data: boards, message: "Boards fetched successfully" });
     }
   } catch (error) {
     res.status(500).json({ message: "Error while fetching board(s)" });
@@ -39,11 +45,15 @@ async function fetchBoard(req, res) {
 // - /board/create -> Creates a new board
 async function createBoard(req, res) {
   try {
-    const boardData = req.body;
-    const newBoard = await Board.create(boardData);
+    const userId = req.user?._id; // Assuming user is attached by auth middleware
+    const boardData = {
+      ...req.body,
+      owner_id: userId,
+    };
+    const board = await Board.create(boardData);
     res
       .status(201)
-      .json({ data: newBoard, message: "Board created successfully" });
+      .json({ data: board, message: "Board created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error while creating board" });
   }
@@ -54,8 +64,7 @@ async function createBoard(req, res) {
 async function updateBoard(req, res) {
   const { id } = req.params;
   try {
-    const updateData = req.body;
-    const updatedBoard = await Board.update(id, updateData);
+    const updatedBoard = await Board.update(id, req.body);
     if (!updatedBoard) {
       return res
         .status(404)
@@ -63,7 +72,7 @@ async function updateBoard(req, res) {
     }
     res
       .status(200)
-      .json({ data: updatedBoard, message: `Board updated successfully` });
+      .json({ data: updatedBoard, message: "Board updated successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error while updating board" });
   }
@@ -74,17 +83,64 @@ async function updateBoard(req, res) {
 async function deleteBoard(req, res) {
   const { id } = req.params;
   try {
-    const deletedBoard = await Board.delete(id);
-    if (!deletedBoard) {
+    // First check if board exists and is trashed
+    const board = await Board.get(id);
+    if (!board) {
+      return res
+        .status(404)
+        .json({ message: `Board with id ${id} not found` });
+    }
+    
+    if (!board.isTrashed) {
+      return res
+        .status(400)
+        .json({ message: "Board must be moved to trash before permanent deletion" });
+    }
+
+    const deletedBoard = await Board.remove(id);
+    res
+      .status(200)
+      .json({ data: deletedBoard, message: "Board deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error while deleting board" });
+  }
+}
+
+// POST endpoint:
+// - /board/trash/:id -> Moves a board to trash
+async function moveToTrash(req, res) {
+  const { id } = req.params;
+  try {
+    const trashedBoard = await Board.moveToTrash(id);
+    if (!trashedBoard) {
       return res
         .status(404)
         .json({ message: `Board with id ${id} not found` });
     }
     res
       .status(200)
-      .json({ data: deletedBoard, message: `Board deleted successfully` });
+      .json({ data: trashedBoard, message: "Board moved to trash successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error while deleting board" });
+    res.status(500).json({ message: "Error while moving board to trash" });
+  }
+}
+
+// POST endpoint:
+// - /board/restore/:id -> Restores a board from trash
+async function restoreFromTrash(req, res) {
+  const { id } = req.params;
+  try {
+    const restoredBoard = await Board.restoreFromTrash(id);
+    if (!restoredBoard) {
+      return res
+        .status(404)
+        .json({ message: `Board with id ${id} not found` });
+    }
+    res
+      .status(200)
+      .json({ data: restoredBoard, message: "Board restored successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Error while restoring board" });
   }
 }
 
@@ -93,4 +149,6 @@ export default {
   createBoard,
   updateBoard,
   deleteBoard,
+  moveToTrash,
+  restoreFromTrash,
 };

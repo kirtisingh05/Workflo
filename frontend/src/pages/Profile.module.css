@@ -1,0 +1,197 @@
+.profileContainer {
+  padding: 2rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.profileCard {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+}
+
+:global(.dark-mode) .profileCard {
+  background-color: #2d3748;
+  color: white;
+}
+
+.avatarSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-color: #4a6fa5;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+}
+
+:global(.dark-mode) .avatar {
+  background-color: #6b8cb2;
+}
+
+.changeAvatarBtn {
+  background: none;
+  border: 1px solid #4a6fa5;
+  color: #4a6fa5;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+:global(.dark-mode) .changeAvatarBtn {
+  border-color: #6b8cb2;
+  color: #6b8cb2;
+}
+
+.changeAvatarBtn:hover {
+  background-color: #4a6fa5;
+  color: white;
+}
+
+:global(.dark-mode) .changeAvatarBtn:hover {
+  background-color: #6b8cb2;
+}
+
+.profileForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-weight: 500;
+  color: #4a5568;
+}
+
+:global(.dark-mode) .formGroup label {
+  color: #e2e8f0;
+}
+
+.formGroup input {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+:global(.dark-mode) .formGroup input {
+  background-color: #1a202c;
+  border-color: #4a5568;
+  color: white;
+}
+
+.formGroup input:disabled {
+  background-color: #f7fafc;
+  cursor: not-allowed;
+}
+
+:global(.dark-mode) .formGroup input:disabled {
+  background-color: #2d3748;
+}
+
+.formGroup input:focus {
+  outline: none;
+  border-color: #4a6fa5;
+}
+
+:global(.dark-mode) .formGroup input:focus {
+  border-color: #6b8cb2;
+}
+
+.formActions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.editBtn, .saveBtn, .cancelBtn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editBtn, .saveBtn {
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+}
+
+:global(.dark-mode) .editBtn,
+:global(.dark-mode) .saveBtn {
+  background-color: #6b8cb2;
+}
+
+.editBtn:hover, .saveBtn:hover {
+  background-color: #3a5a8c;
+}
+
+:global(.dark-mode) .editBtn:hover,
+:global(.dark-mode) .saveBtn:hover {
+  background-color: #5a7ca2;
+}
+
+.cancelBtn {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+}
+
+:global(.dark-mode) .cancelBtn {
+  background-color: #4a5568;
+  color: white;
+}
+
+.cancelBtn:hover {
+  background-color: #cbd5e0;
+}
+
+:global(.dark-mode) .cancelBtn:hover {
+  background-color: #2d3748;
+}
+
+.error, .success {
+  padding: 0.75rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.error {
+  background-color: #fed7d7;
+  color: #e53e3e;
+}
+
+:global(.dark-mode) .error {
+  background-color: rgba(229, 62, 62, 0.1);
+}
+
+.success {
+  background-color: #c6f6d5;
+  color: #38a169;
+}
+
+:global(.dark-mode) .success {
+  background-color: rgba(56, 161, 105, 0.1);
+}

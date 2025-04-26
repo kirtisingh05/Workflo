@@ -1,12 +1,9 @@
 import Task from "../models/task.js";
 
-// GET endpoints:
-//
-// - /task/fetch/board/:board_id : gets all tasks of a board by board_id
 async function fetchTasksByBoard(req, res) {
   const { board_id } = req.params;
   try {
-    const tasks = await Task.getByBoardId(board_id);
+    const tasks = await Task.getAll(board_id);
     if (!tasks || tasks.length === 0) {
       return res
         .status(404)
@@ -20,11 +17,10 @@ async function fetchTasksByBoard(req, res) {
   }
 }
 
-// - /task/fetch/:id : gets a task by id
 async function fetchTask(req, res) {
   const { id } = req.params;
   try {
-    const task = await Task.getById(id);
+    const task = await Task.get(id);
     if (!task) {
       return res
         .status(404)
@@ -38,22 +34,18 @@ async function fetchTask(req, res) {
   }
 }
 
-// POST endpoints:
-//
-// - /task/create : creates a task
 async function createTask(req, res) {
   try {
     const taskData = req.body;
-    const newTask = await Task.create(taskData);
+    const task = await Task.create(taskData);
     res
       .status(201)
-      .json({ data: newTask, message: "Task created successfully" });
+      .json({ data: task, message: "Task created successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error while creating task" });
   }
 }
 
-// - /task/update/:id : updates a task by id
 async function updateTask(req, res) {
   const { id } = req.params;
   try {
@@ -72,13 +64,10 @@ async function updateTask(req, res) {
   }
 }
 
-// DELETE endpoint:
-//
-// - /task/delete/:id : deletes a task by id
 async function deleteTask(req, res) {
   const { id } = req.params;
   try {
-    const deletedTask = await Task.delete(id);
+    const deletedTask = await Task.remove(id);
     if (!deletedTask) {
       return res
         .status(404)

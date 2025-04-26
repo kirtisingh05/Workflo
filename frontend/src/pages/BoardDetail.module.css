@@ -1,0 +1,761 @@
+.boardDetail {
+  padding: 2rem;
+  min-height: 100vh;
+}
+
+.boardDetailContainer {
+  padding: 2rem;
+  min-height: calc(100vh - 64px);
+}
+
+.darkMode {
+  background-color: #1a202c;
+  color: #fff;
+}
+
+.boardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.boardHeader h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.boardActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.newTaskBtn {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.newTaskBtn:hover {
+  background-color: var(--primary-hover);
+}
+
+.boardInfo h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.boardInfo p {
+  color: #666;
+}
+
+.darkMode .boardInfo p {
+  color: #cbd5e0;
+}
+
+.addTaskBtn {
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.addTaskBtn:hover {
+  background-color: #3a5a8c;
+}
+
+.boardContent {
+  background-color: var(--secondary-color);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  min-height: calc(100vh - 200px);
+}
+
+.columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.taskColumns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  height: 100%;
+}
+
+.column {
+  background-color: #f7fafc;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.taskColumn {
+  background-color: var(--light-bg);
+  border-radius: var(--border-radius);
+  padding: 1rem;
+  min-height: 400px;
+}
+
+.darkMode .column {
+  background-color: #2d3748;
+}
+
+.column h2 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+  color: #4a5568;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.columnTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.darkMode .column h2 {
+  color: #e2e8f0;
+}
+
+.taskList {
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.taskList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taskCard {
+  background: white;
+  border-radius: 4px;
+  padding: 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  cursor: grab;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.taskCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.darkMode .taskCard {
+  background: #4a5568;
+  color: white;
+}
+
+:global(.dark-mode) .taskCard {
+  background-color: #2d3748;
+}
+
+.taskCard.dragging {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+  transform: rotate(2deg);
+}
+
+.taskCard h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+}
+
+.taskCard p {
+  font-size: 0.875rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+:global(.dark-mode) .taskCard p {
+  color: #a0aec0;
+}
+
+.darkMode .taskCard p {
+  color: #cbd5e0;
+}
+
+.taskMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.priority {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.low {
+  background-color: #c6f6d5;
+  color: #38a169;
+}
+
+.low {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.medium {
+  background-color: #feebc8;
+  color: #dd6b20;
+}
+
+.medium {
+  background-color: var(--warning-color);
+  color: white;
+}
+
+.high {
+  background-color: #fed7d7;
+  color: #e53e3e;
+}
+
+.high {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.darkMode .low {
+  background-color: rgba(56, 161, 105, 0.2);
+}
+
+.darkMode .medium {
+  background-color: rgba(221, 107, 32, 0.2);
+}
+
+.darkMode .high {
+  background-color: rgba(229, 62, 62, 0.2);
+}
+
+.subtasks {
+  font-size: 0.75rem;
+  color: #718096;
+}
+
+.subtasks {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+:global(.dark-mode) .subtasks {
+  color: #a0aec0;
+}
+
+.darkMode .subtasks {
+  color: #a0aec0;
+}
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.modalContent {
+  background: var(--light-bg);
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  width: 90%;
+  max-width: 500px;
+}
+
+.darkMode .modalContent {
+  background: #2d3748;
+  color: white;
+}
+
+:global(.dark-mode) .modalContent {
+  background-color: #2d3748;
+}
+
+.modalContent h2 {
+  margin-bottom: 1.5rem;
+}
+
+.modalContent h2 {
+  margin-bottom: 1.5rem;
+  color: var(--text-color);
+}
+
+.formGroup {
+  margin-bottom: 1rem;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.formGroup input,
+.formGroup textarea,
+.formGroup select {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+.darkMode .formGroup input,
+.darkMode .formGroup textarea,
+.darkMode .formGroup select {
+  background: #4a5568;
+  border-color: #718096;
+  color: white;
+}
+
+:global(.dark-mode) .formGroup input,
+:global(.dark-mode) .formGroup textarea,
+:global(.dark-mode) .formGroup select {
+  background-color: #1a202c;
+  color: white;
+  border-color: #4a5568;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.submitBtn,
+.cancelBtn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.saveBtn {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submitBtn {
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+}
+
+.submitBtn:hover {
+  background-color: #3a5a8c;
+}
+
+.cancelBtn {
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+}
+
+.cancelBtn {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.darkMode .cancelBtn {
+  background-color: #718096;
+  color: white;
+}
+
+:global(.dark-mode) .cancelBtn {
+  color: white;
+  border-color: #4a5568;
+}
+
+.cancelBtn:hover {
+  background-color: #cbd5e0;
+}
+
+.darkMode .cancelBtn:hover {
+  background-color: #4a5568;
+}
+
+.error {
+  background-color: #fed7d7;
+  color: #e53e3e;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.error {
+  background-color: var(--danger-color);
+  color: white;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin: 1rem;
+  text-align: center;
+}
+
+.darkMode .error {
+  background-color: rgba(229, 62, 62, 0.1);
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 1.2rem;
+  color: #4a5568;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  font-size: 1.2rem;
+  color: var(--text-color);
+}
+
+.darkMode .loading {
+  color: #e2e8f0;
+}
+
+.headerActions {
+  display: flex;
+  gap: 1rem;
+}
+
+.manageBtn {
+  background-color: transparent;
+  border: 1px solid #4a6fa5;
+  color: #4a6fa5;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.darkMode .manageBtn {
+  border-color: #6b8cb2;
+  color: #6b8cb2;
+}
+
+.manageBtn:hover {
+  background-color: #4a6fa5;
+  color: white;
+}
+
+.darkMode .manageBtn:hover {
+  background-color: #6b8cb2;
+}
+
+.contributorsModal {
+  max-width: 600px !important;
+}
+
+.inviteForm {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.darkMode .inviteForm {
+  border-color: #4a5568;
+}
+
+.contributorsList {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.contributorsList h3 {
+  margin-bottom: 1rem;
+  color: #4a5568;
+}
+
+.darkMode .contributorsList h3 {
+  color: #e2e8f0;
+}
+
+.contributorItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+.darkMode .contributorItem {
+  background-color: #2d3748;
+}
+
+.contributorInfo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.contributorEmail {
+  font-weight: 500;
+}
+
+.roleSelect {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.875rem;
+}
+
+.darkMode .roleSelect {
+  background-color: #4a5568;
+  border-color: #718096;
+  color: white;
+}
+
+.removeBtn {
+  background-color: transparent;
+  color: #e53e3e;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.removeBtn:hover {
+  background-color: #fed7d7;
+}
+
+.darkMode .removeBtn:hover {
+  background-color: rgba(229, 62, 62, 0.1);
+}
+
+.taskDetailModal {
+  max-width: 600px !important;
+}
+
+.taskDescription {
+  margin-bottom: 1.5rem;
+  color: #4a5568;
+  line-height: 1.5;
+}
+
+.darkMode .taskDescription {
+  color: #e2e8f0;
+}
+
+.subtasksSection {
+  margin: 1.5rem 0;
+}
+
+.subtasksSection h3 {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.subtasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.subtaskItem {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem;
+  background-color: #f7fafc;
+  border-radius: 4px;
+}
+
+.darkMode .subtaskItem {
+  background-color: #2d3748;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.checkbox span {
+  flex: 1;
+}
+
+.checkbox span.completed {
+  text-decoration: line-through;
+  color: #718096;
+}
+
+.darkMode .checkbox span.completed {
+  color: #718096;
+}
+
+.addSubtaskForm {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.addSubtaskForm input {
+  flex: 1;
+  margin: 0;
+}
+
+.addSubtaskForm button {
+  padding: 0.75rem 1rem;
+  background-color: #4a6fa5;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.darkMode .addSubtaskForm button {
+  background-color: #6b8cb2;
+}
+
+.addSubtaskForm button:hover {
+  background-color: #3a5a8c;
+}
+
+.darkMode .addSubtaskForm button:hover {
+  background-color: #5a7ca2;
+}
+
+.closeBtn {
+  margin-top: 1.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  background-color: #e2e8f0;
+  color: #4a5568;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.darkMode .closeBtn {
+  background-color: #4a5568;
+  color: white;
+}
+
+.closeBtn:hover {
+  background-color: #cbd5e0;
+}
+
+.darkMode .closeBtn:hover {
+  background-color: #2d3748;
+}
+
+.status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background-color: #e2e8f0;
+  color: #4a5568;
+}
+
+.darkMode .status {
+  background-color: #4a5568;
+  color: #e2e8f0;
+}
