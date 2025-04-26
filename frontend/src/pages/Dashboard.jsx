@@ -1,23 +1,28 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
-import { fetchBoards, createBoard, moveToTrash, restoreFromTrash } from '../services/boards';
-import styles from './Dashboard.module.css';
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import {
+  fetchBoards,
+  createBoard,
+  moveToTrash,
+  restoreFromTrash,
+} from "../services/boards";
+import styles from "./Dashboard.module.css";
 
 const Dashboard = ({ isDarkMode }) => {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  
+
   const [boards, setBoards] = useState([]);
   const [trashedBoards, setTrashedBoards] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [showTrashed, setShowTrashed] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showNewBoardModal, setShowNewBoardModal] = useState(false);
   const [newBoardData, setNewBoardData] = useState({
-    title: '',
-    description: '',
+    title: "",
+    description: "",
   });
 
   useEffect(() => {
@@ -27,7 +32,7 @@ const Dashboard = ({ isDarkMode }) => {
   const loadBoards = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const response = await fetchBoards(searchQuery, showTrashed);
       if (showTrashed) {
         setTrashedBoards(response.data);
@@ -35,8 +40,8 @@ const Dashboard = ({ isDarkMode }) => {
         setBoards(response.data);
       }
     } catch (error) {
-      setError('Error loading boards');
-      console.error('Error loading boards:', error);
+      setError("Error loading boards");
+      console.error("Error loading boards:", error);
     } finally {
       setLoading(false);
     }
@@ -45,17 +50,17 @@ const Dashboard = ({ isDarkMode }) => {
   const handleCreateBoard = async (e) => {
     e.preventDefault();
     try {
-      setError('');
+      setError("");
       const response = await createBoard({
         ...newBoardData,
         owner: user.id,
       });
       setBoards((prev) => [response.data, ...prev]);
       setShowNewBoardModal(false);
-      setNewBoardData({ title: '', description: '' });
+      setNewBoardData({ title: "", description: "" });
     } catch (error) {
-      setError('Error creating board');
-      console.error('Error creating board:', error);
+      setError("Error creating board");
+      console.error("Error creating board:", error);
     }
   };
 
@@ -65,8 +70,8 @@ const Dashboard = ({ isDarkMode }) => {
       setBoards((prev) => prev.filter((board) => board._id !== boardId));
       loadBoards();
     } catch (error) {
-      setError('Error moving board to trash');
-      console.error('Error moving board to trash:', error);
+      setError("Error moving board to trash");
+      console.error("Error moving board to trash:", error);
     }
   };
 
@@ -76,8 +81,8 @@ const Dashboard = ({ isDarkMode }) => {
       setTrashedBoards((prev) => prev.filter((board) => board._id !== boardId));
       loadBoards();
     } catch (error) {
-      setError('Error restoring board from trash');
-      console.error('Error restoring board from trash:', error);
+      setError("Error restoring board from trash");
+      console.error("Error restoring board from trash:", error);
     }
   };
 
@@ -95,7 +100,9 @@ const Dashboard = ({ isDarkMode }) => {
   }
 
   return (
-    <div className={`${styles.dashboardContainer} ${isDarkMode ? styles.darkMode : ''}`}>
+    <div
+      className={`${styles.dashboardContainer} ${isDarkMode ? styles.darkMode : ""}`}
+    >
       <header className={styles.dashboardHeader}>
         <div className={styles.headerContent}>
           <h1>My Boards</h1>
@@ -107,10 +114,10 @@ const Dashboard = ({ isDarkMode }) => {
               New Board
             </button>
             <button
-              className={`${styles.trashedBtn} ${showTrashed ? styles.active : ''}`}
+              className={`${styles.trashedBtn} ${showTrashed ? styles.active : ""}`}
               onClick={() => setShowTrashed(!showTrashed)}
             >
-              {showTrashed ? 'View Active Boards' : 'View Trash'}
+              {showTrashed ? "View Active Boards" : "View Trash"}
             </button>
           </div>
         </div>
@@ -128,36 +135,37 @@ const Dashboard = ({ isDarkMode }) => {
       {error && <div className={styles.error}>{error}</div>}
 
       <div className={styles.boardsGrid}>
-        {(showTrashed ? trashedBoards : boards).map((board) => (
-          <div
-            key={board._id}
-            className={styles.boardCard}
-            onClick={() => !showTrashed && navigate(`/board/${board._id}`)}
-          >
-            <div className={styles.boardContent}>
-              <h2>{board.title}</h2>
-              <p>{board.description}</p>
-              <div className={styles.boardMeta}>
-                <span className={styles.date}>
-                  Created {new Date(board.createdAt).toLocaleDateString()}
-                </span>
-                <button
-                  className={styles.actionBtn}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (showTrashed) {
-                      handleRestoreFromTrash(board._id);
-                    } else {
-                      handleMoveToTrash(board._id);
-                    }
-                  }}
-                >
-                  {showTrashed ? 'Restore' : 'Move to Trash'}
-                </button>
+        {boards &&
+          (showTrashed ? trashedBoards : boards).map((board) => (
+            <div
+              key={board._id}
+              className={styles.boardCard}
+              onClick={() => !showTrashed && navigate(`/board/${board._id}`)}
+            >
+              <div className={styles.boardContent}>
+                <h2>{board.title}</h2>
+                <p>{board.description}</p>
+                <div className={styles.boardMeta}>
+                  <span className={styles.date}>
+                    Created {new Date(board.createdAt).toLocaleDateString()}
+                  </span>
+                  <button
+                    className={styles.actionBtn}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (showTrashed) {
+                        handleRestoreFromTrash(board._id);
+                      } else {
+                        handleMoveToTrash(board._id);
+                      }
+                    }}
+                  >
+                    {showTrashed ? "Restore" : "Move to Trash"}
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
       {showNewBoardModal && (
@@ -184,7 +192,10 @@ const Dashboard = ({ isDarkMode }) => {
                   id="description"
                   value={newBoardData.description}
                   onChange={(e) =>
-                    setNewBoardData({ ...newBoardData, description: e.target.value })
+                    setNewBoardData({
+                      ...newBoardData,
+                      description: e.target.value,
+                    })
                   }
                   rows={4}
                 />
