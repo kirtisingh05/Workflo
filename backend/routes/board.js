@@ -6,8 +6,8 @@ const router = Router();
 // GET endpoints:
 // /board/fetch/:id -> Gets a board by id
 // /board/fetch?query=<query_params> -> Gets boards based on search query
-router.get("/fetch/:id", boardController.fetchBoard);
-router.get("/fetch", boardController.fetchBoard);
+router.get("/fetch/:id", boardController.fetchBoards);
+router.get("/fetch", boardController.fetchBoards);
 
 // POST endpoints:
 // /board/create -> Creates a board
@@ -16,8 +16,6 @@ router.get("/fetch", boardController.fetchBoard);
 // /board/restore/:id -> Restores a board from trash
 router.post("/create", boardController.createBoard);
 router.post("/update/:id", boardController.updateBoard);
-router.post("/trash/:id", boardController.moveToTrash);
-router.post("/restore/:id", boardController.restoreFromTrash);
 
 // DELETE endpoint:
 // /board/delete/:id -> Deletes a board by id
