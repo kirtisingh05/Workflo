@@ -5,10 +5,9 @@ const taskSchema = new mongoose.Schema(
     title: {
       type: String,
       required: true,
+      required: true,
     },
-    description: {
-      type: String,
-    },
+    description: { type: String },
     subtasks: [
       {
         description: {
@@ -27,10 +26,9 @@ const taskSchema = new mongoose.Schema(
       default: "NOT STARTED",
       required: true,
     },
-    priority: {
-      type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
+    deadline: {
+      required: true,
+      type: Date,
     },
     board: {
       type: mongoose.Schema.Types.ObjectId,
@@ -39,12 +37,12 @@ const taskSchema = new mongoose.Schema(
     },
     created_by: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Contributor",
       required: true,
     },
     assigned_to: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: "Contributor",
     },
   },
   { timestamps: true },
@@ -54,21 +52,17 @@ const Task = mongoose.model("Task", taskSchema);
 
 async function get(id) {
   try {
-    const task = await Task.findById(id)
-      .populate("created_by", "name email")
-      .populate("assigned_to", "name email");
+    const task = await Task.findById(id);
     return task;
   } catch (error) {
     throw new Error(`Error finding task with id ${id}: ${error.message}`);
   }
 }
 
-async function getAll(board_id) {
+async function getAll(board_id, filter = {}) {
   try {
-    const tasks = await Task.find({ board: board_id })
-      .populate("created_by", "name email")
-      .populate("assigned_to", "name email")
-      .sort({ createdAt: -1 });
+    const query = { board: board_id, ...filter };
+    const tasks = await Task.find(query);
     return tasks;
   } catch (error) {
     throw new Error(
@@ -79,10 +73,30 @@ async function getAll(board_id) {
 
 async function create(taskData) {
   try {
-    const task = new Task(taskData);
+    const {
+      title,
+      description,
+      board_id,
+      status,
+      subtasks,
+      deadline,
+      created_by,
+      assigned_to,
+    } = taskData;
+
+    const task = new Task({
+      title,
+      description,
+      board: board_id,
+      status,
+      subtasks,
+      deadline,
+      created_by,
+      assigned_to,
+    });
     await task.save();
-    const populatedTask = await get(task._id);
-    return populatedTask;
+
+    return task;
   } catch (error) {
     throw new Error(`Error creating task: ${error.message}`);
   }
@@ -90,24 +104,21 @@ async function create(taskData) {
 
 async function update(id, taskData) {
   try {
+    const { title, description, status, subtasks, deadline, assigned_to } =
+      taskData;
+
     const updatedTask = await Task.findByIdAndUpdate(
       id,
-      { ...taskData },
+      { title, description, status, subtasks, deadline, assigned_to },
       {
         new: true,
         runValidators: true,
       },
-    )
-      .populate("created_by", "name email")
-      .populate("assigned_to", "name email");
-
-    if (!updatedTask) {
-      throw new Error(`Task with id ${id} not found`);
-    }
-
+    );
+    await updatedTask.save();
     return updatedTask;
   } catch (error) {
-    throw new Error(`Error updating task with id ${id}: ${error.message}`);
+    throw new Error(`Error upding the board with id ${id}: ${error.message}`);
   }
 }
 
@@ -120,62 +131,10 @@ async function remove(id) {
   }
 }
 
-async function updateSubtasks(id, subtasks) {
-  try {
-    const updatedTask = await Task.findByIdAndUpdate(
-      id,
-      { subtasks },
-      {
-        new: true,
-        runValidators: true,
-      },
-    )
-      .populate("created_by", "name email")
-      .populate("assigned_to", "name email");
-
-    if (!updatedTask) {
-      throw new Error(`Task with id ${id} not found`);
-    }
-
-    return updatedTask;
-  } catch (error) {
-    throw new Error(
-      `Error updating subtasks for task with id ${id}: ${error.message}`,
-    );
-  }
-}
-
-async function updateStatus(id, status) {
-  try {
-    const updatedTask = await Task.findByIdAndUpdate(
-      id,
-      { status },
-      {
-        new: true,
-        runValidators: true,
-      },
-    )
-      .populate("created_by", "name email")
-      .populate("assigned_to", "name email");
-
-    if (!updatedTask) {
-      throw new Error(`Task with id ${id} not found`);
-    }
-
-    return updatedTask;
-  } catch (error) {
-    throw new Error(
-      `Error updating status for task with id ${id}: ${error.message}`,
-    );
-  }
-}
-
 export default {
   get,
   getAll,
   create,
   update,
   remove,
-  updateSubtasks,
-  updateStatus,
 };
