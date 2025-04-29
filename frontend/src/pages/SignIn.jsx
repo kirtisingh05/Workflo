@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { signIn } from "../services/auth";
 import { FiMail, FiLock, FiLogIn } from "react-icons/fi";
 
 export default function SignIn() {
@@ -9,9 +10,8 @@ export default function SignIn() {
     password: "",
   });
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { saveUserInfo, loading } = useAuth();
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -24,15 +24,13 @@ export default function SignIn() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    setIsLoading(true);
 
     try {
-      await login(formData.email, formData.password);
-      navigate("/dashboard");
+      await signIn(formData);
+      await saveUserInfo();
+      navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to sign in");
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -50,7 +48,9 @@ export default function SignIn() {
 
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900 rounded-lg p-4">
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">
+              {error}
+            </p>
           </div>
         )}
 
@@ -104,13 +104,13 @@ export default function SignIn() {
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={loading}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span className="absolute left-0 inset-y-0 flex items-center pl-3">
                 <FiLogIn className="h-5 w-5 text-blue-500 group-hover:text-blue-400" />
               </span>
-              {isLoading ? (
+              {loading ? (
                 <div className="flex items-center">
                   <div className="w-5 h-5 border-t-2 border-b-2 border-white rounded-full animate-spin mr-2"></div>
                   Signing in...

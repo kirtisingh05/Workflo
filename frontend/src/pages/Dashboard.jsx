@@ -1,8 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { fetchBoards, createBoard, moveToTrash, restoreFromTrash } from "../services/boards";
-import { FiPlus, FiTrash2, FiRefreshCw, FiSearch, FiCalendar, FiArchive } from "react-icons/fi";
+import {
+  fetchBoards,
+  createBoard,
+  moveToTrash,
+  restoreFromTrash,
+} from "../services/boards";
+import {
+  FiPlus,
+  FiTrash2,
+  FiRefreshCw,
+  FiSearch,
+  FiCalendar,
+  FiArchive,
+} from "react-icons/fi";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -21,14 +33,18 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    loadBoards();
-  }, [showTrashed]);
+    const timeoutId = setTimeout(() => {
+      loadBoards();
+    }, 100);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, showTrashed]);
 
   const loadBoards = async () => {
     try {
       setLoading(true);
       setError("");
       const response = await fetchBoards(searchQuery, showTrashed);
+      console.log(response.data);
       if (showTrashed) {
         setTrashedBoards(response.data);
       } else {
@@ -50,6 +66,7 @@ const Dashboard = () => {
         ...newBoardData,
         owner: user.id,
       });
+      loadBoards();
       setBoards((prev) => [response.data, ...prev]);
       setShowNewBoardModal(false);
       setNewBoardData({ title: "", description: "" });
@@ -83,14 +100,6 @@ const Dashboard = () => {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -110,9 +119,10 @@ const Dashboard = () => {
               <button
                 onClick={() => setShowTrashed(!showTrashed)}
                 className={`inline-flex items-center px-4 py-2 border rounded-md shadow-sm text-sm font-medium transition-colors
-                  ${showTrashed
-                    ? "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
-                    : "border-transparent text-white bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  ${
+                    showTrashed
+                      ? "border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                      : "border-transparent text-white bg-gray-600 hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
                   }`}
               >
                 {showTrashed ? (
@@ -146,58 +156,67 @@ const Dashboard = () => {
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900 rounded-lg">
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">
+              {error}
+            </p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(showTrashed ? trashedBoards : boards).map((board) => (
-            <div
-              key={board._id}
-              onClick={() => !showTrashed && navigate(`/board/${board._id}`)}
-              className="group bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer overflow-hidden"
-            >
-              <div className="p-6">
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
-                  {board.title}
-                </h2>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
-                  {board.description}
-                </p>
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center text-gray-500 dark:text-gray-400">
-                    <FiCalendar className="h-4 w-4 mr-1" />
-                    {new Date(board.createdAt).toLocaleDateString()}
-                  </div>
-                  <button
-                    onClick={(e) =>
-                      showTrashed
-                        ? handleRestoreFromTrash(board._id, e)
-                        : handleMoveToTrash(board._id, e)
-                    }
-                    className={`inline-flex items-center px-3 py-1 rounded-md text-sm transition-colors
-                      ${showTrashed
-                        ? "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
-                        : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+        {loading ? (
+          <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {(showTrashed ? trashedBoards : boards).map((board) => (
+              <div
+                key={board._id}
+                onClick={() => !showTrashed && navigate(`/board/${board._id}`)}
+                className="group bg-white dark:bg-gray-800 rounded-lg shadow-md hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 cursor-pointer overflow-hidden"
+              >
+                <div className="p-6">
+                  <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                    {board.title}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
+                    {board.description}
+                  </p>
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center text-gray-500 dark:text-gray-400">
+                      <FiCalendar className="h-4 w-4 mr-1" />
+                      {new Date(board.createdAt).toLocaleDateString()}
+                    </div>
+                    <button
+                      onClick={(e) =>
+                        showTrashed
+                          ? handleRestoreFromTrash(board._id, e)
+                          : handleMoveToTrash(board._id, e)
+                      }
+                      className={`inline-flex items-center px-3 py-1 rounded-md text-sm transition-colors
+                      ${
+                        showTrashed
+                          ? "text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30"
+                          : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
                       }`}
-                  >
-                    {showTrashed ? (
-                      <>
-                        <FiRefreshCw className="mr-1 h-4 w-4" />
-                        Restore
-                      </>
-                    ) : (
-                      <>
-                        <FiTrash2 className="mr-1 h-4 w-4" />
-                        Move to Trash
-                      </>
-                    )}
-                  </button>
+                    >
+                      {showTrashed ? (
+                        <>
+                          <FiRefreshCw className="mr-1 h-4 w-4" />
+                          Restore
+                        </>
+                      ) : (
+                        <>
+                          <FiTrash2 className="mr-1 h-4 w-4" />
+                          Move to Trash
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         {/* New Board Modal */}
         {showNewBoardModal && (
@@ -210,7 +229,10 @@ const Dashboard = () => {
                 <form onSubmit={handleCreateBoard}>
                   <div className="space-y-4">
                     <div>
-                      <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="title"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
                         Title
                       </label>
                       <input
@@ -218,7 +240,10 @@ const Dashboard = () => {
                         id="title"
                         value={newBoardData.title}
                         onChange={(e) =>
-                          setNewBoardData({ ...newBoardData, title: e.target.value })
+                          setNewBoardData({
+                            ...newBoardData,
+                            title: e.target.value,
+                          })
                         }
                         required
                         className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:text-white"
@@ -226,7 +251,10 @@ const Dashboard = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label
+                        htmlFor="description"
+                        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                      >
                         Description
                       </label>
                       <textarea
