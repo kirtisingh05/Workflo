@@ -2,9 +2,15 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { fetchBoards } from "../services/boards";
-import { getTask, createTask, updateTask } from "../services/tasks";
+import { getTasks, createTask, updateTask } from "../services/tasks";
 import { getContributors } from "../services/contributors";
-import { FiPlus, FiClock, FiCheckCircle, FiCircle, FiAlertCircle } from "react-icons/fi";
+import {
+  FiPlus,
+  FiClock,
+  FiCheckCircle,
+  FiCircle,
+  FiAlertCircle,
+} from "react-icons/fi";
 
 const BoardDetail = () => {
   const { id } = useParams();
@@ -22,6 +28,7 @@ const BoardDetail = () => {
     status: "NOT STARTED",
     priority: "medium",
     subtasks: [],
+    deadline: "",
   });
 
   useEffect(() => {
@@ -33,11 +40,8 @@ const BoardDetail = () => {
       setLoading(true);
       setError("");
 
-      const [boardResponse, tasksResponse, contributorsResponse] = await Promise.all([
-        fetchBoards(id),
-        getTask(id),
-        getContributors(id),
-      ]);
+      const [boardResponse, tasksResponse, contributorsResponse] =
+        await Promise.all([fetchBoards(id), getTasks(id), getContributors(id)]);
 
       setBoard(boardResponse.data);
       setTasks(tasksResponse.data);
@@ -56,8 +60,8 @@ const BoardDetail = () => {
       setError("");
       const taskData = {
         ...newTaskData,
-        board: id,
-        created_by: user.id,
+        board_id: id,
+        created_by: user._id,
       };
 
       const response = await createTask(taskData);
@@ -69,6 +73,7 @@ const BoardDetail = () => {
         status: "NOT STARTED",
         priority: "medium",
         subtasks: [],
+        deadline: "",
       });
     } catch (error) {
       setError("Error creating task");
@@ -93,7 +98,7 @@ const BoardDetail = () => {
       if (taskToUpdate.status !== status) {
         const response = await updateTask(taskId, { status });
         setTasks((prev) =>
-          prev.map((task) => (task._id === taskId ? { ...task, status } : task))
+          prev.map((task) => (task._id === taskId ? response.data : task)),
         );
       }
     } catch (error) {
@@ -113,12 +118,18 @@ const BoardDetail = () => {
   const statusColumns = [
     { id: "NOT STARTED", icon: FiCircle, title: "Not Started", color: "gray" },
     { id: "IN PROGRESS", icon: FiClock, title: "In Progress", color: "yellow" },
-    { id: "COMPLETED", icon: FiCheckCircle, title: "Completed", color: "green" },
+    {
+      id: "COMPLETED",
+      icon: FiCheckCircle,
+      title: "Completed",
+      color: "green",
+    },
   ];
 
   const priorityColors = {
     low: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
-    medium: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
+    medium:
+      "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
     high: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
   };
 
@@ -140,7 +151,9 @@ const BoardDetail = () => {
 
         {error && (
           <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900 rounded-lg">
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">
+              {error}
+            </p>
           </div>
         )}
 
@@ -180,12 +193,15 @@ const BoardDetail = () => {
                         {task.description}
                       </p>
                       <div className="flex items-center justify-between">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}
+                        >
                           {task.priority}
                         </span>
                         <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {task.subtasks?.filter((st) => st.completed).length || 0}/
-                          {task.subtasks?.length || 0} subtasks
+                          {task.subtasks?.filter((st) => st.completed).length ||
+                            0}
+                          /{task.subtasks?.length || 0} subtasks
                         </span>
                       </div>
                     </div>
@@ -205,7 +221,10 @@ const BoardDetail = () => {
                 </h3>
                 <form onSubmit={handleCreateTask} className="space-y-4">
                   <div>
-                    <label htmlFor="title" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="title"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       Title
                     </label>
                     <input
@@ -213,7 +232,10 @@ const BoardDetail = () => {
                       id="title"
                       value={newTaskData.title}
                       onChange={(e) =>
-                        setNewTaskData({ ...newTaskData, title: e.target.value })
+                        setNewTaskData({
+                          ...newTaskData,
+                          title: e.target.value,
+                        })
                       }
                       required
                       className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:text-white"
@@ -221,7 +243,10 @@ const BoardDetail = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="description"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       Description
                     </label>
                     <textarea
@@ -239,14 +264,20 @@ const BoardDetail = () => {
                   </div>
 
                   <div>
-                    <label htmlFor="priority" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                    <label
+                      htmlFor="priority"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
                       Priority
                     </label>
                     <select
                       id="priority"
                       value={newTaskData.priority}
                       onChange={(e) =>
-                        setNewTaskData({ ...newTaskData, priority: e.target.value })
+                        setNewTaskData({
+                          ...newTaskData,
+                          priority: e.target.value,
+                        })
                       }
                       className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:text-white"
                     >
@@ -254,6 +285,27 @@ const BoardDetail = () => {
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
                     </select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="deadline"
+                      className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                    >
+                      Deadline
+                    </label>
+                    <input
+                      type="date"
+                      id="deadline"
+                      value={newTaskData.deadline}
+                      onChange={(e) =>
+                        setNewTaskData({
+                          ...newTaskData,
+                          deadline: e.target.value,
+                        })
+                      }
+                      className="mt-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:text-white"
+                    />
                   </div>
 
                   <div className="flex justify-end space-x-3">

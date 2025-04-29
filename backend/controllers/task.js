@@ -61,6 +61,7 @@ async function createTask(req, res) {
   const boardId = req.body.board_id;
 
   if (!(await isAuthorized(userId, boardId))) {
+    console.log(userId, boardId);
     return res.status(403).json({ message: "Unauthorized to create task" });
   }
 

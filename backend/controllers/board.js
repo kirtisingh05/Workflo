@@ -8,6 +8,8 @@ function filterBuilder(query, userId) {
 
   if (query.trashed !== undefined) {
     filter.trashed = query.trashed === "true";
+  } else {
+    filter.trashed = false;
   }
 
   if (query.title) {
@@ -19,8 +21,8 @@ function filterBuilder(query, userId) {
 
 async function isAuthorized(boardId, userId) {
   const board = await Board.get(boardId);
-  const isOwner = board.owner.toString() === userId;
-  const isContributor = board.contributors.some(
+  const isOwner = board?.owner.toString() === userId;
+  const isContributor = board?.contributors.some(
     (contributorId) => contributorId.toString() === userId,
   );
   const role = await Contributor.getRole(userId, boardId);
@@ -31,13 +33,16 @@ async function fetchBoards(req, res) {
   const { id } = req.params;
   const query = req.query;
   const userId = req.user_id;
-
-  if (!(await isAuthorized(id, userId))) {
-    return res.status(403).json({ message: "Unauthorized access to board" });
-  }
+  console.log(userId);
 
   try {
     if (id) {
+      if (!(await isAuthorized(id, userId))) {
+        return res
+          .status(403)
+          .json({ message: "Unauthorized access to board" });
+      }
+
       const board = await Board.get(id);
       if (!board) {
         return res.status(404).json({ message: "Board not found!" });
