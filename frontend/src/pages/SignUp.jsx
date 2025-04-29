@@ -1,18 +1,18 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { signUp } from '../services/auth';
-import { FiUser, FiMail, FiLock, FiUserPlus } from 'react-icons/fi';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { signUp } from "../services/auth";
+import { FiUser, FiMail, FiLock, FiUserPlus } from "react-icons/fi";
 
 const SignUp = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
   });
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -25,11 +25,11 @@ const SignUp = () => {
 
   const validateForm = () => {
     if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
+      setError("Passwords do not match");
       return false;
     }
     if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError("Password must be at least 6 characters long");
       return false;
     }
     return true;
@@ -39,20 +39,16 @@ const SignUp = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
-    setError('');
+    setError("");
     setLoading(true);
 
     try {
-      await signUp({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      });
-      navigate('/signin', {
-        state: { message: 'Account created successfully. Please sign in.' },
+      await signUp(formData);
+      navigate("/sign-in", {
+        state: { message: "Account created successfully. Please sign in." },
       });
     } catch (error) {
-      setError(error.message || 'Failed to create account');
+      setError(error.message || "Failed to create account");
     } finally {
       setLoading(false);
     }
@@ -72,7 +68,9 @@ const SignUp = () => {
 
         {error && (
           <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900 rounded-lg p-4">
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400 text-center">
+              {error}
+            </p>
           </div>
         )}
 
@@ -88,9 +86,9 @@ const SignUp = () => {
                 </div>
                 <input
                   type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
+                  id="username"
+                  name="username"
+                  value={formData.username}
                   onChange={handleChange}
                   required
                   placeholder="Enter your full name"
