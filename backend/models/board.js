@@ -8,6 +8,10 @@ const boardSchema = new mongoose.Schema({
 	description: {
 		type: String,
 	},
+	createdAt: {
+		type: Date,
+		default: Date.now,
+	},
 	owner: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "User",
@@ -55,13 +59,14 @@ async function getAll(owner_id, filter = {}) {
 
 async function create(boardData) {
 	try {
-		const { title, description, owner, contributors, tasks } = boardData;
+		const { title, description, owner, contributors, tasks, createdAt } = boardData;
 		const board = new Board({
 			title,
 			description,
 			owner,
 			contributors,
 			tasks,
+			createdAt: createdAt || Date.now(),
 		});
 		await board.save();
 		return board._id;
