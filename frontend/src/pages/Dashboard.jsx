@@ -9,6 +9,12 @@ import {
   updateBoard,
 } from "../services/boards";
 import {
+  getContributors,
+  addContributor,
+  removeContributor,
+  updateContributorRole,
+} from "../services/contributors";
+import {
   FiPlus,
   FiTrash2,
   FiRefreshCw,
@@ -16,6 +22,7 @@ import {
   FiCalendar,
   FiArchive,
   FiEdit2,
+  FiUsers,
 } from "react-icons/fi";
 
 const Dashboard = () => {
@@ -40,10 +47,10 @@ const Dashboard = () => {
     title: "",
     description: "",
     createdAt: new Date().toISOString().slice(0, 16)
-
-
-    
   });
+  const [boardContributors, setBoardContributors] = useState({});
+  const [showContributorsModal, setShowContributorsModal] = useState(false);
+  const [selectedBoard, setSelectedBoard] = useState(null);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -52,16 +59,34 @@ const Dashboard = () => {
     return () => clearTimeout(timeoutId);
   }, [searchQuery, showTrashed]);
 
+  const loadBoardContributors = async (boardId) => {
+    try {
+      const response = await getContributors(boardId);
+      setBoardContributors(prev => ({
+        ...prev,
+        [boardId]: response.data
+      }));
+    } catch (error) {
+      console.error("Error loading contributors:", error);
+    }
+  };
+
+  // Modify loadBoards to also fetch contributors
   const loadBoards = async () => {
     try {
       setLoading(true);
       setError("");
       const response = await fetchBoards(searchQuery, showTrashed);
-      console.log(response.data);
+      const boardsData = response.data;
+      
       if (showTrashed) {
-        setTrashedBoards(response.data);
+        setTrashedBoards(boardsData);
       } else {
-        setBoards(response.data);
+        setBoards(boardsData);
+        // Fetch contributors for each board
+        boardsData.forEach(board => {
+          loadBoardContributors(board._id);
+        });
       }
     } catch (error) {
       setError("Error loading boards");
@@ -129,6 +154,62 @@ const Dashboard = () => {
     } catch (error) {
       setError("Error restoring board from trash");
       console.error("Error restoring board from trash:", error);
+    }
+  };
+
+  const handleAddContributor = async () => {
+    try {
+      setError("");
+      const emailInput = document.querySelector('input[type="email"]');
+      const email = emailInput.value.trim();
+      
+      if (!email) {
+        setError("Please enter an email address");
+        return;
+      }
+
+      if (!selectedBoard) {
+        setError("No board selected");
+        return;
+      }
+      
+      await addContributor(selectedBoard._id, { 
+        email, 
+        role: "VIEWER" // Default role for new contributors
+      });
+      
+      await loadBoardContributors(selectedBoard._id);
+      emailInput.value = "";
+    } catch (error) {
+      setError(error.message || "Error adding contributor");
+      console.error("Error adding contributor:", error);
+    }
+  };
+
+  const handleRoleChange = async (contributorId, newRole) => {
+    try {
+      setError("");
+      if (!selectedBoard) {
+        setError("No board selected");
+        return;
+      }
+
+      await updateContributorRole(selectedBoard._id, contributorId, newRole);
+      await loadBoardContributors(selectedBoard._id);
+    } catch (error) {
+      setError(error.message || "Error updating contributor role");
+      console.error("Error updating contributor role:", error);
+    }
+  };
+
+  const handleRemoveContributor = async (contributorId) => {
+    try {
+      setError("");
+      await removeContributor(selectedBoard._id, contributorId);
+      await loadBoardContributors(selectedBoard._id);
+    } catch (error) {
+      setError("Error removing contributor");
+      console.error("Error removing contributor:", error);
     }
   };
 
@@ -221,6 +302,39 @@ const Dashboard = () => {
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                   {board.description}
                 </p>
+                
+                {/* Contributors section */}
+                <div className="flex items-center mb-4">
+                  <FiUsers className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
+                  <div className="flex -space-x-2 overflow-hidden">
+                    {boardContributors[board._id]?.slice(0, 3).map((contributor) => (
+                      <img
+                        key={contributor._id}
+                        src={contributor.user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`}
+                        alt={contributor.user.username}
+                        className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
+                      />
+                    ))}
+                    {boardContributors[board._id]?.length > 3 && (
+                      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800">
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                          +{boardContributors[board._id].length - 3}
+                        </span>
+                      </div>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedBoard(board);
+                        setShowContributorsModal(true);
+                      }}
+                      className="ml-2 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300"
+                    >
+                      <FiUsers className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
+
                 <div className="flex items-center justify-between text-sm">
                   <div className="flex items-center text-gray-500 dark:text-gray-400">
                     <FiCalendar className="h-4 w-4 mr-1" />
@@ -442,6 +556,90 @@ const Dashboard = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contributors Modal */}
+        {showContributorsModal && selectedBoard && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-lg w-full transform transition-all">
+              <div className="px-6 py-4">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    Board Contributors
+                  </h3>
+                  <button
+                    onClick={() => setShowContributorsModal(false)}
+                    className="text-gray-400 hover:text-gray-500 focus:outline-none"
+                  >
+                    <span className="sr-only">Close</span>
+                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  {boardContributors[selectedBoard._id]?.map((contributor) => (
+                    <div key={contributor._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div className="flex items-center space-x-3">
+                        <img
+                          src={contributor.user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`}
+                          alt={contributor.user.username}
+                          className="h-8 w-8 rounded-full"
+                        />
+                        <div>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {contributor.user.username}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {contributor.user.email}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <select
+                          value={contributor.role}
+                          onChange={(e) => handleRoleChange(contributor._id, e.target.value)}
+                          className="block w-24 text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
+                        >
+                          <option value="ADMIN">Admin</option>
+                          <option value="EDITOR">Editor</option>
+                          <option value="VIEWER">Viewer</option>
+                        </select>
+                        <button
+                          onClick={() => handleRemoveContributor(contributor._id)}
+                          className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                        >
+                          <FiTrash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* Add new contributor section */}
+                  <div className="mt-4">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
+                      Add New Contributor
+                    </h4>
+                    <div className="flex space-x-2">
+                      <input
+                        type="email"
+                        placeholder="Enter email address"
+                        className="flex-1 block w-full px-3 py-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:text-white"
+                      />
+                      <button
+                        onClick={handleAddContributor}
+                        className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                      >
+                        <FiPlus className="mr-2 -ml-1 h-4 w-4" />
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

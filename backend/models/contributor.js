@@ -25,63 +25,27 @@ const Contributor = mongoose.model("Contributor", contributorSchema);
 
 async function getAll(filter) {
   try {
-    const aggregationPipeline = [
-      {
-        $lookup: {
-          from: "users",
-          localField: "user",
-          foreignField: "_id",
-          as: "user",
-        },
-      },
-      { $unwind: "$user" },
-      {
-        $project: {
-          "user.username": 1,
-          "user.email": 1,
-          "user.profile_picture": 1,
-          role: 1,
-          board: 1,
-          createdAt: 1,
-          updatedAt: 1,
-        },
-      },
-      { $match: filter },
-      { $sort: { createdAt: -1 } },
-    ];
-    const contributors = await Contributor.aggregate(aggregationPipeline);
+    const contributors = await Contributor.find(filter)
+      .populate("user", "username email profile_picture")
+      .sort({ createdAt: -1 });
     return contributors;
   } catch (error) {
-    throw new Error(
-      `Error fetching contributors for board ${board_id}: ${error.message}`,
-    );
+    throw new Error(`Error fetching contributors: ${error.message}`);
   }
 }
 
 async function create(contributorData) {
   try {
-    const { user_id, board_id, role } = contributorData;
-
-    const existingContributor = await Contributor.findOne({
-      user: user_id,
-      board: board_id,
-    });
-
-    if (existingContributor) {
-      throw new Error("User is already a contributor to this board");
-    }
+    const { user, board, role } = contributorData;
 
     const contributor = new Contributor({
-      user: user_id,
-      board: board_id,
+      user,
+      board,
       role,
     });
 
     await contributor.save();
-    return await Contributor.findById(contributor._id).populate(
-      "user",
-      "name email",
-    );
+    return contributor;
   } catch (error) {
     throw new Error(`Error creating contributor: ${error.message}`);
   }
@@ -97,8 +61,8 @@ async function update(id, contributorData) {
       {
         new: true,
         runValidators: true,
-      },
-    ).populate("user", "name email");
+      }
+    );
 
     if (!updatedContributor) {
       throw new Error(`Contributor with id ${id} not found`);
@@ -106,24 +70,46 @@ async function update(id, contributorData) {
 
     return updatedContributor;
   } catch (error) {
-    throw new Error(
-      `Error updating contributor with id ${id}: ${error.message}`,
-    );
+    throw new Error(`Error updating contributor with id ${id}: ${error.message}`);
   }
 }
 
 async function remove(id) {
   try {
     const deletedContributor = await Contributor.findByIdAndDelete(id);
+    if (!deletedContributor) {
+      throw new Error(`Contributor with id ${id} not found`);
+    }
     return deletedContributor;
   } catch (error) {
-    throw new Error(
-      `Error deleting contributor with id ${id}: ${error.message}`,
-    );
+    throw new Error(`Error deleting contributor with id ${id}: ${error.message}`);
   }
 }
 
 async function getRole(user_id, board_id) {
+  try {
+    const contributor = await Contributor.findOne({
+      user: user_id,
+      board: board_id,
+    });
+    return contributor?.role || null;
+  } catch (error) {
+    throw new Error(`Error getting user role: ${error.message}`);
+  }
+}
+
+async function findById(board_id) {
+  try {
+    const contributors = await Contributor.find({ board: board_id })
+      .populate("user", "username email profile_picture")
+      .sort({ createdAt: -1 });
+    return contributors;
+  } catch (error) {
+    throw new Error(`Error fetching contributors for board ${board_id}: ${error.message}`);
+  }
+}
+
+async function findOne(user_id, board_id) {
   try {
     const contributor = await Contributor.findOne({
       user: user_id,
@@ -141,4 +127,6 @@ export default {
   update,
   remove,
   getRole,
+  findById,
+  findOne,
 };

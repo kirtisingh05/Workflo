@@ -1,25 +1,26 @@
 import api from "./auth";
 
-export const addContributor = async (boardId, userData) => {
+export const addContributor = async (boardId, { email, role }) => {
   try {
-    const response = await api.post(
-      `/boards/${boardId}/contributors`,
-      userData,
-    );
-    return response.data.contributor;
+    const response = await api.post("/api/contributor/create", {
+      email,
+      board_id: boardId,
+      role
+    });
+    return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to add contributor",
+      error.response?.data?.message || "Failed to add contributor"
     );
   }
 };
 
-export const removeContributor = async (boardId, userId) => {
+export const removeContributor = async (boardId, contributorId) => {
   try {
-    await api.delete(`/boards/${boardId}/contributors/${userId}`);
+    await api.delete(`/api/contributor/delete/${contributorId}`);
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to remove contributor",
+      error.response?.data?.message || "Failed to remove contributor"
     );
   }
 };
@@ -30,30 +31,20 @@ export const getContributors = async (boardId) => {
     return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to fetch contributors",
+      error.response?.data?.message || "Failed to fetch contributors"
     );
   }
 };
 
-export const updateContributorRole = async (boardId, userId, role) => {
+export const updateContributorRole = async (boardId, contributorId, role) => {
   try {
-    const response = await api.put(
-      `/boards/${boardId}/contributors/${userId}`,
-      { role },
-    );
-    return response.data.contributor;
+    const response = await api.post(`/api/contributor/update/${contributorId}`, {
+      role
+    });
+    return response.data;
   } catch (error) {
     throw new Error(
-      error.response?.data?.message || "Failed to update contributor role",
+      error.response?.data?.message || "Failed to update contributor role"
     );
-  }
-};
-
-export const searchUsers = async (query) => {
-  try {
-    const response = await api.get("/users/search", { params: { q: query } });
-    return response.data.users;
-  } catch (error) {
-    throw new Error(error.response?.data?.message || "Failed to search users");
   }
 };
