@@ -41,12 +41,12 @@ const Dashboard = () => {
     id: "",
     title: "",
     description: "",
-    createdAt: ""
+    createdAt: "",
   });
   const [newBoardData, setNewBoardData] = useState({
     title: "",
     description: "",
-    createdAt: new Date().toISOString().slice(0, 16)
+    createdAt: new Date().toISOString().slice(0, 16),
   });
   const [boardContributors, setBoardContributors] = useState({});
   const [showContributorsModal, setShowContributorsModal] = useState(false);
@@ -62,9 +62,9 @@ const Dashboard = () => {
   const loadBoardContributors = async (boardId) => {
     try {
       const response = await getContributors(boardId);
-      setBoardContributors(prev => ({
+      setBoardContributors((prev) => ({
         ...prev,
-        [boardId]: response.data
+        [boardId]: response.data,
       }));
     } catch (error) {
       console.error("Error loading contributors:", error);
@@ -78,13 +78,13 @@ const Dashboard = () => {
       setError("");
       const response = await fetchBoards(searchQuery, showTrashed);
       const boardsData = response.data;
-      
+
       if (showTrashed) {
         setTrashedBoards(boardsData);
       } else {
         setBoards(boardsData);
         // Fetch contributors for each board
-        boardsData.forEach(board => {
+        boardsData.forEach((board) => {
           loadBoardContributors(board._id);
         });
       }
@@ -119,13 +119,13 @@ const Dashboard = () => {
       setError("");
       const { id, ...updateData } = editBoardData;
       await updateBoard(id, updateData);
-      
-      setBoards(prev => prev.map(board => 
-        board._id === id 
-          ? { ...board, ...updateData }
-          : board
-      ));
-      
+
+      setBoards((prev) =>
+        prev.map((board) =>
+          board._id === id ? { ...board, ...updateData } : board,
+        ),
+      );
+
       setShowEditBoardModal(false);
     } catch (error) {
       setError("Error updating board");
@@ -162,7 +162,7 @@ const Dashboard = () => {
       setError("");
       const emailInput = document.querySelector('input[type="email"]');
       const email = emailInput.value.trim();
-      
+
       if (!email) {
         setError("Please enter an email address");
         return;
@@ -172,12 +172,12 @@ const Dashboard = () => {
         setError("No board selected");
         return;
       }
-      
-      await addContributor(selectedBoard._id, { 
-        email, 
-        role: "VIEWER" // Default role for new contributors
+
+      await addContributor(selectedBoard._id, {
+        email,
+        role: "VIEWER", // Default role for new contributors
       });
-      
+
       await loadBoardContributors(selectedBoard._id);
       emailInput.value = "";
     } catch (error) {
@@ -302,19 +302,24 @@ const Dashboard = () => {
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-2">
                   {board.description}
                 </p>
-                
+
                 {/* Contributors section */}
                 <div className="flex items-center mb-4">
                   <FiUsers className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
                   <div className="flex -space-x-2 overflow-hidden">
-                    {boardContributors[board._id]?.slice(0, 3).map((contributor) => (
-                      <img
-                        key={contributor._id}
-                        src={contributor.user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`}
-                        alt={contributor.user.username}
-                        className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
-                      />
-                    ))}
+                    {boardContributors[board._id]
+                      ?.slice(0, 3)
+                      .map((contributor) => (
+                        <img
+                          key={contributor._id}
+                          src={
+                            contributor.user.profile_picture ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`
+                          }
+                          alt={contributor.user.username}
+                          className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
+                        />
+                      ))}
                     {boardContributors[board._id]?.length > 3 && (
                       <div className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800">
                         <span className="text-xs text-gray-600 dark:text-gray-400">
@@ -349,7 +354,9 @@ const Dashboard = () => {
                             id: board._id,
                             title: board.title,
                             description: board.description,
-                            createdAt: new Date(board.createdAt).toISOString().slice(0, 16)
+                            createdAt: new Date(board.createdAt)
+                              .toISOString()
+                              .slice(0, 16),
                           });
                           setShowEditBoardModal(true);
                         }}
@@ -575,18 +582,34 @@ const Dashboard = () => {
                     className="text-gray-400 hover:text-gray-500 focus:outline-none"
                   >
                     <span className="sr-only">Close</span>
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <svg
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
 
                 <div className="space-y-4">
                   {boardContributors[selectedBoard._id]?.map((contributor) => (
-                    <div key={contributor._id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div
+                      key={contributor._id}
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                    >
                       <div className="flex items-center space-x-3">
                         <img
-                          src={contributor.user.profile_picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`}
+                          src={
+                            contributor.user.profile_picture ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`
+                          }
                           alt={contributor.user.username}
                           className="h-8 w-8 rounded-full"
                         />
@@ -602,7 +625,9 @@ const Dashboard = () => {
                       <div className="flex items-center space-x-2">
                         <select
                           value={contributor.role}
-                          onChange={(e) => handleRoleChange(contributor._id, e.target.value)}
+                          onChange={(e) =>
+                            handleRoleChange(contributor._id, e.target.value)
+                          }
                           className="block w-24 text-sm border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:text-white"
                         >
                           <option value="ADMIN">Admin</option>
@@ -610,7 +635,9 @@ const Dashboard = () => {
                           <option value="VIEWER">Viewer</option>
                         </select>
                         <button
-                          onClick={() => handleRemoveContributor(contributor._id)}
+                          onClick={() =>
+                            handleRemoveContributor(contributor._id)
+                          }
                           className="p-1 text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                         >
                           <FiTrash2 className="h-4 w-4" />

@@ -10,6 +10,7 @@ import userRouter from "./routes/user.js";
 import boardRouter from "./routes/board.js";
 import contributorRouter from "./routes/contributor.js";
 import taskRouter from "./routes/task.js";
+import inviteRouter from "./routes/invite.js";
 import { auth } from "./middleware/auth.js";
 
 const app = express();
@@ -17,51 +18,40 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-// Set security headers before CORS
-app.use((req, res, next) => {
-  res.setHeader("Cross-Origin-Opener-Policy", "unsafe-none");
-  res.setHeader("Cross-Origin-Embedder-Policy", "unsafe-none");
-  res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
-  next();
-});
-
-// CORS configuration
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173"],
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 app.get("/api", (req, res) => {
-	res.status(200).json({ result: "Server is working!" });
+  res.status(200).json({ result: "Server is working!" });
 });
 app.use("/api/auth", authRouter);
 app.use("/api/user", auth, userRouter);
 app.use("/api/contributor", auth, contributorRouter);
 app.use("/api/board", auth, boardRouter);
 app.use("/api/task", auth, taskRouter);
+app.use("/api/invite", auth, inviteRouter);
 
 const __dirname = path.resolve();
 
 app.use(express.static(path.join(__dirname, "frontend", "dist")));
 app.use("*", (req, res) => {
-	res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
+  res.sendFile(path.join(__dirname, "frontend", "dist", "index.html"));
 });
 
 mongoose
-	.connect(process.env.DB_URI)
-	.then(() => {
-		console.log("Connected to MongoDB");
-		const PORT = process.env.PORT || 3000;
-		app.listen(PORT, () => {
-			console.log(`Server running on port ${PORT}`);
-		});
-	})
-	.catch((error) => {
-		console.error("MongoDB connection error:", error);
-		process.exit(1);
-	});
+  .connect(process.env.DB_URI)
+  .then(() => {
+    console.log("Connected to MongoDB");
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("MongoDB connection error:", error);
+    process.exit(1);
+  });

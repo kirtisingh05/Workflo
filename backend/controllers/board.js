@@ -19,12 +19,15 @@ function filterBuilder(query, userId) {
   return filter;
 }
 
+async function isAuthorizedView(boardId, userId) {
+  const role = await Contributor.getRole(userId, boardId);
+  return role === "VIEWER";
+}
+
 async function isAuthorized(boardId, userId) {
   const board = await Board.get(boardId);
   const isOwner = board?.owner.toString() === userId;
-  const isContributor = board?.contributors.some(
-    (contributorId) => contributorId.toString() === userId,
-  );
+  const isContributor = await Contributor.findOne(userId, boardId);
   const role = await Contributor.getRole(userId, boardId);
   return (role === "ADMIN" || role === "EDITOR") && (isOwner || isContributor);
 }
@@ -33,11 +36,10 @@ async function fetchBoards(req, res) {
   const { id } = req.params;
   const query = req.query;
   const userId = req.user_id;
-  console.log(userId);
 
   try {
     if (id) {
-      if (!(await isAuthorized(id, userId))) {
+      if (!(await isAuthorizedView(id, userId))) {
         return res
           .status(403)
           .json({ message: "Unauthorized access to board" });
@@ -46,12 +48,6 @@ async function fetchBoards(req, res) {
       const board = await Board.get(id);
       if (!board) {
         return res.status(404).json({ message: "Board not found!" });
-      }
-
-      if (board.owner.toString() !== userId) {
-        return res
-          .status(403)
-          .json({ message: "Unauthorized access to board" });
       }
 
       return res.status(200).json({ data: board });

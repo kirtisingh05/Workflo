@@ -1,5 +1,20 @@
 import User from "../models/user.js";
 
+async function me(req, res) {
+  try {
+    const userId = req.user_id;
+    const user = await User.get({ _id: userId });
+    if (!user || user.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    return res.json(user[0]);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting current user", error: error.message });
+  }
+}
+
 async function updateUser(req, res) {
   const { id } = req.params;
   const { username, email, profilePicture } = req.body;
@@ -24,9 +39,7 @@ async function removeUser(req, res) {
   try {
     const removedUser = await User.remove(id);
     if (!removedUser) {
-      return res
-        .status(404)
-        .json({ message: `User with id ${id} not found` });
+      return res.status(404).json({ message: `User with id ${id} not found` });
     }
     res
       .status(200)
@@ -37,6 +50,7 @@ async function removeUser(req, res) {
 }
 
 export default {
+  me,
   updateUser,
   removeUser,
 };

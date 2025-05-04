@@ -22,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const saveUserInfo = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/api/auth/me", {
+      const res = await axios.get("/api/user/me", {
         withCredentials: true,
       });
       const user = res.data;

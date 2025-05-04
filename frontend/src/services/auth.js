@@ -50,7 +50,7 @@ export const getCurrentUser = async () => {
     const token = localStorage.getItem("token");
     if (!token) return null;
 
-    const response = await axios.get("/api/auth/me");
+    const response = await axios.get("/api/user/me");
     return response.data.user;
   } catch (error) {
     if (error.response?.status === 401) {

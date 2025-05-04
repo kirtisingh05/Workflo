@@ -8,20 +8,26 @@ import SignUp from "./pages/SignUp";
 import Profile from "./pages/Profile";
 import BoardDetail from "./pages/BoardDetail";
 import PrivateRoute from "./components/PrivateRoute";
+import AcceptInvite from "./pages/AcceptInvite";
 
 function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   const handleToggleDarkMode = () => {
-    setIsDarkMode(prev => !prev);
+    setIsDarkMode((prev) => !prev);
   };
 
   return (
     <AuthProvider>
-      <div className={`min-h-screen font-sans antialiased ${isDarkMode ? 'dark' : ''}`}>
+      <div
+        className={`min-h-screen font-sans antialiased ${isDarkMode ? "dark" : ""}`}
+      >
         <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
           <BrowserRouter>
-            <Header onToggleDarkMode={handleToggleDarkMode} isDarkMode={isDarkMode} />
+            <Header
+              onToggleDarkMode={handleToggleDarkMode}
+              isDarkMode={isDarkMode}
+            />
             <main className="flex-1 container mx-auto px-4 sm:px-6 lg:px-8 pt-16">
               <Routes>
                 <Route
@@ -48,6 +54,7 @@ function App() {
                     </PrivateRoute>
                   }
                 />
+                <Route path="/accept-invite" element={<AcceptInvite />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />
               </Routes>
