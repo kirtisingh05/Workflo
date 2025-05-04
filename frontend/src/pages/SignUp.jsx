@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { signUp } from "../services/auth";
 import { FiUser, FiMail, FiLock, FiUserPlus } from "react-icons/fi";
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -54,6 +55,12 @@ const SignUp = () => {
     }
   };
 
+  const handleGoogleSuccess = () => {
+    navigate("/", { 
+      state: { message: "Account created successfully with Google." } 
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8 bg-white dark:bg-gray-800 p-8 rounded-xl shadow-2xl transform transition-all hover:scale-[1.01]">
@@ -74,7 +81,17 @@ const SignUp = () => {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="mt-8 space-y-6">
+        <div className="mt-6">
+          <GoogleSignInButton onSuccess={handleGoogleSuccess} />
+        </div>
+
+        <div className="relative flex items-center mt-6">
+          <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+          <span className="flex-shrink mx-4 text-gray-500 dark:text-gray-400 text-sm">or</span>
+          <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-6 space-y-6">
           <div className="space-y-4">
             <div>
               <label htmlFor="name" className="sr-only">
@@ -184,7 +201,11 @@ const SignUp = () => {
               )}
             </button>
           </div>
-
+          
+          {/* <div>
+            <GoogleSignInButton onSuccess={handleGoogleSuccess} />
+          </div> */}
+          
           <div className="flex items-center justify-center">
             <div className="text-sm">
               <span className="text-gray-500 dark:text-gray-400">

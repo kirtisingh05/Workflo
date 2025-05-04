@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { signIn } from "../services/auth";
 import { FiMail, FiLock, FiLogIn } from "react-icons/fi";
-
+import { GoogleSignInButton } from "../components/GoogleSignInButton"; 
 export default function SignIn() {
   const [formData, setFormData] = useState({
     email: "",
@@ -32,6 +32,11 @@ export default function SignIn() {
     } catch (err) {
       setError(err.response?.data?.message || "Failed to sign in");
     }
+  };
+
+  const handleGoogleSuccess = async () => {
+    await saveUserInfo();
+    navigate("/");
   };
 
   return (
@@ -119,6 +124,16 @@ export default function SignIn() {
                 "Sign In"
               )}
             </button>
+          </div>
+
+          <div className="relative flex items-center">
+            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+            <span className="flex-shrink mx-4 text-gray-500 dark:text-gray-400 text-sm">or</span>
+            <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
+          </div>
+
+          <div>
+            <GoogleSignInButton onSuccess={handleGoogleSuccess} />
           </div>
 
           <div className="flex items-center justify-center">

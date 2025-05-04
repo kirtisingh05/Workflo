@@ -11,6 +11,24 @@ export const signUp = async (userData) => {
   }
 };
 
+export const googleAuth = async ({ email, name, photo }) => {
+  try {
+    const response = await axios.post("/api/auth/google", { 
+      email,
+      name,
+      photo
+    }, {
+      withCredentials: true
+    });
+    localStorage.setItem("user", JSON.stringify(response.data));
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to authenticate with Google"
+    );
+  }
+};
+
 export const signIn = async (credentials) => {
   try {
     const response = await axios.post("/api/auth/signin", credentials, {

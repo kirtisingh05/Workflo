@@ -61,7 +61,65 @@ async function signin(req, res) {
   }
 }
 
-async function googleAuth(req, res) {}
+export const googleAuth = async (req, res) => {
+  try {
+    console.log("Google auth request:", req.body);
+    const existingUserDoc = await User.get({ email: req.body.email });
+    const existingUser = existingUserDoc[0];
+
+    if (existingUser) {
+      const token = generateToken(existingUser._id);
+      const { password: hashedPassword, ...user } = existingUser;
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+          sameSite: "None",
+        })
+        .status(200)
+        .json({ ...user, message: "Sign in successful" });
+    } else {
+      const generatedPassword =
+        Math.random().toString(36).slice(-8) +
+        Math.random().toString(36).slice(-8);
+
+      const hashedPassword = await bcrypt.hash(generatedPassword, 12);
+      
+      // Create new user using the model's create method
+      const userId = await User.create({
+        username:
+          req.body.name.split(" ").join("").toLowerCase() +
+          Math.floor(Math.random() * 1000).toString(),
+        email: req.body.email,
+        password: hashedPassword,
+        profile_picture: req.body.photo
+      });
+
+      const newUserDoc = await User.get({ _id: userId });
+      const newUser = newUserDoc[0];
+      const token = generateToken(userId);
+      const { password: hashedPass, ...user } = newUser;
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: true,
+          maxAge: 24 * 60 * 60 * 1000,
+          sameSite: "None",
+        })
+        .status(200)
+        .json({ ...user, message: "Account created and signed in successfully" });
+    }
+  } catch (error) {
+    console.error("Google auth error:", error);
+    res.status(500).json({ 
+      message: "Internal server error!",
+      error: error.message 
+    });
+  }
+};
 
 async function me(req, res) {
   try {

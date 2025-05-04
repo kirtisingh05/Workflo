@@ -8,5 +8,6 @@ router.get("/me", authController.me);
 router.post("/signup", authController.signup);
 router.post("/signin", authController.signin);
 router.post("/signout", authController.signout);
+router.post("/google", authController.googleAuth);
 
 export default router;
