@@ -61,7 +61,7 @@ async function update(id, contributorData) {
       {
         new: true,
         runValidators: true,
-      }
+      },
     );
 
     if (!updatedContributor) {
@@ -70,7 +70,9 @@ async function update(id, contributorData) {
 
     return updatedContributor;
   } catch (error) {
-    throw new Error(`Error updating contributor with id ${id}: ${error.message}`);
+    throw new Error(
+      `Error updating contributor with id ${id}: ${error.message}`,
+    );
   }
 }
 
@@ -82,7 +84,9 @@ async function remove(id) {
     }
     return deletedContributor;
   } catch (error) {
-    throw new Error(`Error deleting contributor with id ${id}: ${error.message}`);
+    throw new Error(
+      `Error deleting contributor with id ${id}: ${error.message}`,
+    );
   }
 }
 
@@ -105,7 +109,9 @@ async function findById(board_id) {
       .sort({ createdAt: -1 });
     return contributors;
   } catch (error) {
-    throw new Error(`Error fetching contributors for board ${board_id}: ${error.message}`);
+    throw new Error(
+      `Error fetching contributors for board ${board_id}: ${error.message}`,
+    );
   }
 }
 

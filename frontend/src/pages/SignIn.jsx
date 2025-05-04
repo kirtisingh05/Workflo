@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { signIn } from "../services/auth";
 import { FiMail, FiLock, FiLogIn } from "react-icons/fi";
-import { GoogleSignInButton } from "../components/GoogleSignInButton"; 
+import { GoogleSignInButton } from "../components/GoogleSignInButton";
 export default function SignIn() {
+  const user = useAuth();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -21,6 +22,9 @@ export default function SignIn() {
     }));
   };
 
+  const queryParams = new URLSearchParams(location.search);
+  const inviteHash = queryParams.get("invite_hash");
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -28,6 +32,10 @@ export default function SignIn() {
     try {
       await signIn(formData);
       await saveUserInfo();
+      if (inviteHash && inviteHash !== "") {
+        navigate(`/accept-invite?invite_hash=${inviteHash}`);
+				return;
+      }
       navigate("/");
     } catch (err) {
       setError(err.response?.data?.message || "Failed to sign in");
@@ -128,7 +136,9 @@ export default function SignIn() {
 
           <div className="relative flex items-center">
             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
-            <span className="flex-shrink mx-4 text-gray-500 dark:text-gray-400 text-sm">or</span>
+            <span className="flex-shrink mx-4 text-gray-500 dark:text-gray-400 text-sm">
+              or
+            </span>
             <div className="flex-grow border-t border-gray-300 dark:border-gray-600"></div>
           </div>
 

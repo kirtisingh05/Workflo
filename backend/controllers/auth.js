@@ -121,21 +121,6 @@ export const googleAuth = async (req, res) => {
   }
 };
 
-async function me(req, res) {
-  try {
-    const userId = req.user_id;
-    const user = await User.get(userId);
-    if (!user || user.length === 0) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    return res.json(user[0]);
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error getting current user", error: error.message });
-  }
-}
-
 async function signout(req, res) {
   res
     .clearCookie("token", {
@@ -151,6 +136,5 @@ export default {
   signin,
   signup,
   googleAuth,
-  me,
   signout,
 };
