@@ -15,11 +15,6 @@ function filterBuilder(query, boardId) {
   return filter;
 }
 
-async function isAuthorized(userId, boardId) {
-  const role = await Contributor.getRole(userId, boardId);
-  return role === "ADMIN" || role === "EDITOR";
-}
-
 async function fetchTask(req, res) {
   const { id } = req.params;
 
@@ -43,9 +38,6 @@ async function fetchTasksByBoard(req, res) {
   try {
     const filter = filterBuilder(query, board_id);
     const tasks = await Task.getAll(board_id, filter);
-    if (!tasks || tasks.length === 0) {
-      return res.status(404).json({ message: "No tasks found" });
-    }
     res
       .status(200)
       .json({ data: tasks, message: "Tasks fetched successfully" });
@@ -60,8 +52,8 @@ async function createTask(req, res) {
   const userId = req.user_id;
   const boardId = req.body.board_id;
 
-  if (!(await isAuthorized(userId, boardId))) {
-    console.log(userId, boardId);
+  const contributor = await Contributor.getOne(boardId, userId);
+  if (contributor?.role !== "ADMIN" && contributor?.role !== "EDITOR") {
     return res.status(403).json({ message: "Unauthorized to create task" });
   }
 
@@ -86,8 +78,9 @@ async function updateTask(req, res) {
       return res.status(404).json({ message: `Task with id ${id} not found` });
     }
     const boardId = task.board;
-    if (!(await isAuthorized(userId, boardId))) {
-      return res.status(403).json({ message: "Unauthorized to update task" });
+    const contributor = await Contributor.getOne(boardId, userId);
+    if (contributor?.role !== "ADMIN" && contributor?.role !== "EDITOR") {
+      return res.status(403).json({ message: "Unauthorized to create task" });
     }
 
     const updateData = req.body;
@@ -112,7 +105,8 @@ async function deleteTask(req, res) {
       return res.status(404).json({ message: `Task with id ${id} not found` });
     }
     const boardId = task.board;
-    if (!(await isAuthorized(userId, boardId))) {
+    const contributor = await Contributor.getOne(boardId, userId);
+    if (contributor?.role !== "ADMIN" || contributor?.role !== "EDITOR") {
       return res.status(403).json({ message: "Unauthorized to delete task" });
     }
 

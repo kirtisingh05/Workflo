@@ -1,35 +1,26 @@
 import Board from "../models/board.js";
 import Contributor from "../models/contributor.js";
 
-function filterBuilder(query, contributorIds) {
-  const filter = {
-    contributors: { $in: contributorIds },
+function filterBuilder(query, userId, contributorIds) {
+  const accessCondition = {
+    $or: [{ owner: userId }, { contributors: { $in: contributorIds } }],
   };
 
-  if (query.trashed !== undefined) {
-    filter.trashed = query.trashed === "true";
+  const filter = [accessCondition];
+
+  if (query.trashed === "true") {
+    filter.push({ trashed: true });
   } else {
-    filter.trashed = false;
+    filter.push({ trashed: false });
   }
 
   if (query.title) {
-    filter.title = { $regex: query.title, $options: "i" };
+    filter.push({
+      title: { $regex: query.title, $options: "i" },
+    });
   }
 
-  return filter;
-}
-
-async function isAuthorizedView(boardId, userId) {
-  const role = await Contributor.getRole(userId, boardId);
-  return role === "VIEWER";
-}
-
-async function isAuthorized(boardId, userId) {
-  const board = await Board.get(boardId);
-  const isOwner = board?.owner.toString() === userId;
-  const isContributor = await Contributor.findOne(userId, boardId);
-  const role = await Contributor.getRole(userId, boardId);
-  return (role === "ADMIN" || role === "EDITOR") && (isOwner || isContributor);
+  return { $and: filter };
 }
 
 async function fetchBoards(req, res) {
@@ -39,10 +30,8 @@ async function fetchBoards(req, res) {
 
   try {
     if (id) {
-      if (
-        !(await isAuthorizedView(id, userId)) &&
-        !(await isAuthorized(id, userId))
-      ) {
+      const contributor = await Contributor.getOne(id, userId);
+      if (!contributor) {
         return res
           .status(403)
           .json({ message: "Unauthorized access to board" });
@@ -55,15 +44,12 @@ async function fetchBoards(req, res) {
 
       return res.status(200).json({ data: board });
     } else {
-      const contributors = await Contributor.getAll({ user: userId });
-
+      const contributors = await Contributor.getAllByUser(userId);
       const contributorIds = contributors.map((contrib) =>
         contrib._id.toString(),
       );
-
-      const filter = filterBuilder(query, contributorIds);
-
-      const boards = await Board.getAll(userId, filter);
+      const filter = filterBuilder(query, userId, contributorIds);
+      const boards = await Board.getAll(filter);
       return res.status(200).json({ data: boards });
     }
   } catch (error) {
@@ -75,17 +61,21 @@ async function fetchBoards(req, res) {
 
 async function createBoard(req, res) {
   const userId = req.user_id;
+  const { title, description, tasks, createdAt } = req.body;
 
   try {
-    let boardData = {
-      ...req.body,
+    const boardData = {
+      title,
+      description,
       owner: userId,
+      tasks,
+      createdAt,
     };
 
     const boardId = await Board.create(boardData);
     const owner = await Contributor.create({
-      user_id: userId,
-      board_id: boardId,
+      user: userId,
+      board: boardId,
       role: "ADMIN",
     });
     await Board.update(boardId, { contributors: [owner._id] });
@@ -105,14 +95,21 @@ async function updateBoard(req, res) {
   const userId = req.user_id;
 
   try {
-    if (!(await isAuthorized(id, userId))) {
-      return res.status(403).json({ message: "Unauthorized access to board" });
+    const contributor = await Contributor.getOne(id, userId);
+    if (
+      !contributor ||
+      (contributor?.role !== "ADMIN" && contributor?.role !== "EDITOR")
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to update the board" });
     }
 
     const updatedBoard = await Board.update(id, req.body);
     if (!updatedBoard) {
       return res.status(404).json({ message: `Board with id ${id} not found` });
     }
+
     res
       .status(200)
       .json({ data: updatedBoard, message: "Board updated successfully" });
@@ -128,11 +125,18 @@ async function deleteBoard(req, res) {
   const userId = req.user_id;
 
   try {
-    if (!(await isAuthorized(id, userId))) {
-      return res.status(403).json({ message: "Unauthorized access to board" });
+    const contributor = await Contributor.getOne(id, userId);
+    if (!contributor || contributor?.role !== "ADMIN") {
+      return res
+        .status(403)
+        .json({ message: "Unauthorized to delete the board" });
     }
 
     const deletedBoard = await Board.remove(id);
+    if (!deletedBoard) {
+      return res.status(404).json({ message: `Board with id ${id} not found` });
+    }
+
     res
       .status(200)
       .json({ data: deletedBoard, message: "Board deleted successfully" });

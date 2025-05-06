@@ -9,65 +9,65 @@ const EMAIL_USERNAME = process.env.EMAIL_USERNAME;
 const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD;
 
 const mailer = nodemailer.createTransport({
-	service: "gmail",
-	secure: true,
-	secureConnection: false,
-	tls: {
-		ciphers: "SSLv3",
-	},
-	requireTLS: true,
-	port: 465,
-	debug: true,
-	auth: {
-		user: EMAIL_USERNAME,
-		pass: EMAIL_PASSWORD,
-	},
+  service: "gmail",
+  secure: true,
+  secureConnection: false,
+  tls: {
+    ciphers: "SSLv3",
+  },
+  requireTLS: true,
+  port: 465,
+  debug: true,
+  auth: {
+    user: EMAIL_USERNAME,
+    pass: EMAIL_PASSWORD,
+  },
 });
 
 function generateInviteHash(boardId, boardName, email, senderName, role) {
-	return jwt.sign(
-		{ boardId, boardName, email, senderName, role },
-		process.env.JWT_SECRET,
-		{
-			expiresIn: "24h",
-		},
-	);
+  return jwt.sign(
+    { boardId, boardName, email, senderName, role },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "24h",
+    },
+  );
 }
 
 async function invite(req, res) {
-	const { inviteEmail, senderName, boardName, role } = req.body;
-	const { boardId } = req.params;
+  const { inviteEmail, senderName, boardName, role } = req.body;
+  const { boardId } = req.params;
 
-	try {
-		const existingUser = await User.get({ email: inviteEmail });
-		if (existingUser) {
-			const existingContributor = await Contributor.findOne(
-				existingUser[0]._id,
-				boardId,
-			);
+  try {
+    const existingUser = await User.get({ email: inviteEmail });
+    if (existingUser) {
+      const existingContributor = await Contributor.getOne(
+        boardId,
+        existingUser[0]._id,
+      );
 
-			if (existingContributor) {
-				return res.status(400).json({
-					message: "Invited person is already a contribtuor to this board",
-				});
-			}
-		}
+      if (existingContributor) {
+        return res.status(400).json({
+          message: "Invited person is already a contribtuor to this board",
+        });
+      }
+    }
 
-		const inviteHash = generateInviteHash(
-			boardId,
-			boardName,
-			inviteEmail,
-			senderName,
-			role,
-		);
-		const link = `http://localhost:5173/accept-invite?invite_hash=${inviteHash}`;
+    const inviteHash = generateInviteHash(
+      boardId,
+      boardName,
+      inviteEmail,
+      senderName,
+      role,
+    );
+    const link = `http://localhost:5173/accept-invite?invite_hash=${inviteHash}`;
 
-		const mailOptions = {
-			from: `"Workflo Team" <${EMAIL_USERNAME}>`,
-			to: inviteEmail,
-			subject: `${senderName} invited you to their Workflo board: ${boardName}`,
-			text: `You've been invited to collaborate on ${senderName}'s board - ${boardName} with the role ${role} on Workflo.`,
-			html: `
+    const mailOptions = {
+      from: `"Workflo Team" <${EMAIL_USERNAME}>`,
+      to: inviteEmail,
+      subject: `${senderName} invited you to their Workflo board: ${boardName}`,
+      text: `You've been invited to collaborate on ${senderName}'s board - ${boardName} with the role ${role} on Workflo.`,
+      html: `
         <div style="font-family: 'Segoe UI', sans-serif; background-color: #f4f4f7; padding: 30px;">
           <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.05); overflow: hidden;">
             <div style="background-color: #4a90e2; color: white; padding: 25px 20px; text-align: center;">
@@ -88,69 +88,69 @@ async function invite(req, res) {
           </div>
         </div>
       `,
-		};
+    };
 
-		mailer.sendMail(mailOptions, (error, info) => {
-			if (error) {
-				return res.status(500).json({
-					message: "Error sending invite email.",
-					success: false,
-				});
-			}
+    mailer.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return res.status(500).json({
+          message: "Error sending invite email.",
+          success: false,
+        });
+      }
 
-			return res
-				.status(200)
-				.json({ message: "Invite email sent successfully!" });
-		});
-	} catch (error) {
-		return res.status(500).json({ message: error.message });
-	}
+      return res
+        .status(200)
+        .json({ message: "Invite email sent successfully!" });
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 async function decodeInviteHash(req, res) {
-	const { inviteHash } = req.body;
-	try {
-		if (!inviteHash || inviteHash === "") {
-			return res.status(400).json({ message: "No invite hash found" });
-		}
+  const { inviteHash } = req.body;
+  try {
+    if (!inviteHash || inviteHash === "") {
+      return res.status(400).json({ message: "No invite hash found" });
+    }
 
-		const decoded = jwt.verify(inviteHash, process.env.JWT_SECRET);
-		res.status(200).json({
-			boardId: decoded.boardId,
-			boardName: decoded.boardName,
-			senderName: decoded.senderName,
-			email: decoded.email,
-			role: decoded.role,
-		});
-	} catch (error) {
-		return res.status(500).json({ message: error.message });
-	}
+    const decoded = jwt.verify(inviteHash, process.env.JWT_SECRET);
+    res.status(200).json({
+      boardId: decoded.boardId,
+      boardName: decoded.boardName,
+      senderName: decoded.senderName,
+      email: decoded.email,
+      role: decoded.role,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 async function acceptInvite(req, res) {
-	const { boardId, userId } = req.params;
-	const { role } = req.body;
+  const { boardId, userId } = req.params;
+  const { role } = req.body;
 
-	try {
-		const existingContributor = await Contributor.findOne(userId, boardId);
-		if (existingContributor) {
-			return res
-				.status(400)
-				.json({ message: "Already a contributor to this board" });
-		}
+  try {
+    const existingContributor = await Contributor.getOne(boardId, userId);
+    if (existingContributor) {
+      return res
+        .status(400)
+        .json({ message: "Already a contributor to this board" });
+    }
 
-		const contributor = await Contributor.create({
-			user: userId,
-			board: boardId,
-			role: role,
-		});
+    const contributor = await Contributor.create({
+      user: userId,
+      board: boardId,
+      role: role,
+    });
 
-		await Board.update(boardId, { $push: { contributors: contributor._id } });
+    await Board.update(boardId, { $push: { contributors: contributor._id } });
 
-		res.status(200).json({ message: "Invitation accepted successfully" });
-	} catch (error) {
-		return res.status(500).json({ message: error.message });
-	}
+    res.status(200).json({ message: "Invitation accepted successfully" });
+  } catch (error) {
+    return res.status(500).json({ message: error.message });
+  }
 }
 
 export default { invite, decodeInviteHash, acceptInvite };
