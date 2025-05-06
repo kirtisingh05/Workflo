@@ -71,10 +71,8 @@ const Dashboard = () => {
     }
   };
 
-  // Modify loadBoards to also fetch contributors
   const loadBoards = async () => {
     try {
-      setLoading(true);
       setError("");
       const response = await fetchBoards(searchQuery, showTrashed);
       const boardsData = response.data;
@@ -83,7 +81,6 @@ const Dashboard = () => {
         setTrashedBoards(boardsData);
       } else {
         setBoards(boardsData);
-        // Fetch contributors for each board
         boardsData.forEach((board) => {
           loadBoardContributors(board._id);
         });
@@ -128,7 +125,7 @@ const Dashboard = () => {
 
       setShowEditBoardModal(false);
     } catch (error) {
-      setError("Error updating board");
+      setError(error.message);
       console.error("Error updating board:", error);
     }
   };
@@ -138,9 +135,18 @@ const Dashboard = () => {
     try {
       await moveToTrash(boardId);
       setBoards((prev) => prev.filter((board) => board._id !== boardId));
-      loadBoards();
+
+      setBoardContributors((prev) => {
+        const newState = { ...prev };
+        delete newState[boardId];
+        return newState;
+      });
     } catch (error) {
-      setError("Error moving board to trash");
+      if (error.message === "Unauthorized to update the board") {
+        setError("Unauthorized to trash the board");
+      } else {
+        setError(error.message);
+      }
       console.error("Error moving board to trash:", error);
     }
   };
@@ -149,8 +155,10 @@ const Dashboard = () => {
     e.stopPropagation();
     try {
       await restoreFromTrash(boardId);
+
       setTrashedBoards((prev) => prev.filter((board) => board._id !== boardId));
-      loadBoards();
+
+      await loadBoardContributors(boardId);
     } catch (error) {
       setError("Error restoring board from trash");
       console.error("Error restoring board from trash:", error);
@@ -184,6 +192,11 @@ const Dashboard = () => {
       setError(error.message || "Error adding contributor");
       console.error("Error adding contributor:", error);
     }
+  };
+
+  const handleSearchQueryChange = (e) => {
+    e.preventDefault();
+    setSearchQuery(e.target.value);
   };
 
   const handleRoleChange = async (contributorId, newRole) => {
@@ -271,7 +284,7 @@ const Dashboard = () => {
                 type="text"
                 placeholder="Search boards..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchQueryChange(e)}
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
               />
             </div>

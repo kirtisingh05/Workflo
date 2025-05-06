@@ -7,7 +7,7 @@ function AcceptInvite() {
   const [error, setError] = useState(null);
   const [inviteData, setInviteData] = useState(null);
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
 
   const location = useLocation();
   const navigate = useNavigate();
@@ -16,6 +16,8 @@ function AcceptInvite() {
   const inviteHash = queryParams.get("invite_hash");
 
   useEffect(() => {
+    if (authLoading) return;
+
     if (!user) {
       navigate(`/sign-in?from=accept-invite&invite_hash=${inviteHash}`);
       return;
@@ -44,11 +46,7 @@ function AcceptInvite() {
   const handleAccept = async () => {
     try {
       setLoading(true);
-      const res = await acceptInvite(
-        inviteData.boardId,
-        user._id,
-        inviteData.role,
-      );
+      await acceptInvite(inviteData.boardId, user._id, inviteData.role);
       setLoading(false);
       navigate(`/board/${inviteData.boardId}`);
     } catch (err) {

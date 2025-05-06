@@ -37,7 +37,7 @@ export const updateBoard = async (boardId, boardData) => {
     const response = await axios.post(
       `/api/board/update/${boardId}`,
       boardData,
-      { withCredentials: true }
+      { withCredentials: true },
     );
     return response.data;
   } catch (error) {

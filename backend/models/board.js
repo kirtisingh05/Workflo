@@ -45,10 +45,9 @@ async function get(id) {
   }
 }
 
-async function getAll(owner_id, filter = {}) {
+async function getAll(filter = {}) {
   try {
-    const query = { $or: [{ owner: owner_id }, { ...filter }] };
-    const boards = await Board.find(query);
+    const boards = await Board.find(filter);
     return boards;
   } catch (error) {
     throw new Error(
@@ -83,6 +82,7 @@ async function update(id, updateData) {
       runValidators: true,
     });
     await updatedBoard.save();
+    console.log(updatedBoard);
     return updatedBoard;
   } catch (error) {
     throw new Error(`Error updating board with id ${id}: ${error.message}`);

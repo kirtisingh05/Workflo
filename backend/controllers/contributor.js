@@ -1,11 +1,8 @@
-import mongoose from "mongoose";
 import Contributor from "../models/contributor.js";
 import User from "../models/user.js";
 
-function filterBuilder(query, board_id) {
-  const filter = {
-    board: mongoose.Types.ObjectId.createFromHexString(board_id),
-  };
+function filterBuilder(query) {
+  let filter = {};
 
   if (query.role) {
     filter.role = query.role;
@@ -27,7 +24,7 @@ async function fetchContributors(req, res) {
 
   try {
     const filter = filterBuilder(query, board_id);
-    const contributors = await Contributor.getAll(filter);
+    const contributors = await Contributor.getAllByBoard(board_id, filter);
 
     res.status(200).json({
       data: contributors,
@@ -48,29 +45,34 @@ async function createContributor(req, res) {
     if (!email || !board_id || !role) {
       return res.status(400).json({ message: "Missing required fields" });
     }
-    
+
     const user = await User.get({ email });
     if (!user) {
-      return res.status(404).json({ message: "User not found with this email" });
+      return res
+        .status(404)
+        .json({ message: "User not found with this email" });
     }
 
     const existingContributor = await Contributor.findOne({
       user: user._id,
-      board: board_id
+      board: board_id,
     });
 
     if (existingContributor) {
-      return res.status(400).json({ message: "User is already a contributor to this board" });
+      return res
+        .status(400)
+        .json({ message: "User is already a contributor to this board" });
     }
 
     const contributor = await Contributor.create({
       user: user._id,
       board: board_id,
-      role
+      role,
     });
 
-    const populatedContributor = await Contributor.findById(contributor._id)
-      .populate("user", "username email profile_picture");
+    const populatedContributor = await Contributor.findById(
+      contributor._id,
+    ).populate("user", "username email profile_picture");
 
     res.status(201).json({
       data: populatedContributor,
@@ -87,6 +89,7 @@ async function createContributor(req, res) {
 
 async function updateContributor(req, res) {
   const { id } = req.params;
+
   try {
     const { role } = req.body;
     if (!role) {
@@ -94,8 +97,9 @@ async function updateContributor(req, res) {
     }
 
     const updatedContributor = await Contributor.update(id, { role });
-    const populatedContributor = await Contributor.findById(updatedContributor._id)
-      .populate("user", "username email profile_picture");
+    const populatedContributor = await Contributor.findById(
+      updatedContributor._id,
+    ).populate("user", "username email profile_picture");
 
     res.status(200).json({
       data: populatedContributor,
@@ -103,9 +107,9 @@ async function updateContributor(req, res) {
     });
   } catch (error) {
     console.error("Error updating contributor:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Error while updating contributor",
-      error: error.message
+      error: error.message,
     });
   }
 }
@@ -125,9 +129,9 @@ async function deleteContributor(req, res) {
     });
   } catch (error) {
     console.error("Error deleting contributor:", error);
-    res.status(500).json({ 
+    res.status(500).json({
       message: "Error while removing contributor",
-      error: error.message
+      error: error.message,
     });
   }
 }
