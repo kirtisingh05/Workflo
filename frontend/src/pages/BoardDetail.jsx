@@ -264,9 +264,39 @@ const BoardDetail = () => {
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {board?.title}
-          </h1>
+          <div className="flex items-center space-x-4">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {board?.title}
+            </h1>
+            <div className="flex items-center space-x-2">
+              <div className="flex -space-x-2 overflow-hidden">
+                {contributors.slice(0, 3).map((contributor) => (
+                  <img
+                    key={contributor._id}
+                    src={
+                      contributor.user.profile_picture ||
+                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                        contributor.user.username
+                      )}`
+                    }
+                    alt={contributor.user.username}
+                    className="inline-block h-8 w-8 rounded-full border-2 border-white dark:border-gray-800"
+                    title={contributor.user.username}
+                  />
+                ))}
+                {contributors.length > 3 && (
+                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-700 border-2 border-white dark:border-gray-800">
+                    <span className="text-xs text-gray-600 dark:text-gray-400">
+                      +{contributors.length - 3}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <span className="text-sm text-gray-500 dark:text-gray-400">
+                {contributors.length} {contributors.length === 1 ? 'contributor' : 'contributors'}
+              </span>
+            </div>
+          </div>
           <div className="flex items-center space-x-3">
             <button
               onClick={() => setShowNewTaskModal(true)}

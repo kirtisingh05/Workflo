@@ -278,27 +278,35 @@ const Dashboard = () => {
                 {/* Contributors section */}
                 <div className="flex items-center mb-4">
                   <FiUsers className="h-4 w-4 text-gray-500 dark:text-gray-400 mr-2" />
-                  <div className="flex -space-x-2 overflow-hidden">
-                    {boardContributors[board._id]
-                      ?.slice(0, 3)
-                      .map((contributor) => (
-                        <img
-                          key={contributor._id}
-                          src={
-                            contributor.user.profile_picture ||
-                            `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`
-                          }
-                          alt={contributor.user.username}
-                          className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
-                        />
-                      ))}
-                    {boardContributors[board._id]?.length > 3 && (
-                      <div className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800">
-                        <span className="text-xs text-gray-600 dark:text-gray-400">
-                          +{boardContributors[board._id].length - 3}
-                        </span>
-                      </div>
-                    )}
+                  <div className="flex items-center">
+                    <div className="flex -space-x-2 overflow-hidden">
+                      {boardContributors[board._id]
+                        ?.slice(0, 3)
+                        .map((contributor) => (
+                          <img
+                            key={contributor._id}
+                            src={
+                              contributor.user.profile_picture ||
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(contributor.user.username)}`
+                            }
+                            alt={contributor.user.username}
+                            className="inline-block h-6 w-6 rounded-full ring-2 ring-white dark:ring-gray-800"
+                          />
+                        ))}
+                      {boardContributors[board._id]?.length > 3 && (
+                        <div className="flex items-center justify-center h-6 w-6 rounded-full bg-gray-200 dark:bg-gray-700 ring-2 ring-white dark:ring-gray-800">
+                          <span className="text-xs text-gray-600 dark:text-gray-400">
+                            +{boardContributors[board._id].length - 3}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                      {boardContributors[board._id]?.length || 0}{" "}
+                      {boardContributors[board._id]?.length === 1
+                        ? "contributor"
+                        : "contributors"}
+                    </span>
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
