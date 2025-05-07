@@ -106,7 +106,7 @@ async function deleteTask(req, res) {
     }
     const boardId = task.board;
     const contributor = await Contributor.getOne(boardId, userId);
-    if (contributor?.role !== "ADMIN" || contributor?.role !== "EDITOR") {
+    if (!contributor || (contributor?.role !== "ADMIN" && contributor?.role !== "EDITOR")) {
       return res.status(403).json({ message: "Unauthorized to delete task" });
     }
 
@@ -115,7 +115,11 @@ async function deleteTask(req, res) {
       .status(200)
       .json({ data: deletedTask, message: "Task deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "Error while deleting task" });
+    console.error("Error deleting task:", error);
+    res.status(500).json({ 
+      message: "Error while deleting task",
+      error: error.message 
+    });
   }
 }
 

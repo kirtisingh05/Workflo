@@ -2,9 +2,18 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { getBoard } from "../services/boards";
-import { getTasks, createTask, updateTask } from "../services/tasks";
+import { getTasks, createTask, updateTask, deleteTask } from "../services/tasks";
 import { getContributors } from "../services/contributors";
-import { FiPlus, FiClock, FiCheckCircle, FiCircle, FiX, FiUsers } from "react-icons/fi";
+import { 
+  FiPlus, 
+  FiClock, 
+  FiCheckCircle, 
+  FiCircle, 
+  FiX, 
+  FiUsers,
+  FiEdit2,
+  FiTrash2 
+} from "react-icons/fi";
 import { invite } from "../services/invite";
 
 const BoardDetail = () => {
@@ -25,6 +34,16 @@ const BoardDetail = () => {
   const [inviteError, setInviteError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [newTaskData, setNewTaskData] = useState({
+    title: "",
+    description: "",
+    status: "NOT STARTED",
+    priority: "medium",
+    subtasks: [],
+    deadline: "",
+  });
+  const [showEditTaskModal, setShowEditTaskModal] = useState(false);
+  const [editTaskData, setEditTaskData] = useState({
+    id: "",
     title: "",
     description: "",
     status: "NOT STARTED",
@@ -143,6 +162,60 @@ const BoardDetail = () => {
     setInviteSuccessful(null);
   };
 
+  const handleEditTask = async (e) => {
+    e.preventDefault();
+    try {
+      const { id, ...updateData } = editTaskData;
+      const response = await updateTask(id, updateData);
+      setTasks((prev) =>
+        prev.map((task) => (task._id === id ? response.data : task))
+      );
+      setShowEditTaskModal(false);
+      setEditTaskData({
+        id: "",
+        title: "",
+        description: "",
+        status: "NOT STARTED",
+        priority: "medium",
+        subtasks: [],
+        deadline: "",
+      });
+    } catch (err) {
+      console.error("Error updating task:", err);
+      setError("Error updating task");
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      // Custom confirm dialog
+      const taskToDelete = tasks.find(t => t._id === taskId);
+      const confirmDelete = window.confirm(
+        `Are you sure you want to permanently delete the task "${taskToDelete.title}"?\nThis action cannot be undone.`
+      );
+
+      if (!confirmDelete) {
+        return;
+      }
+
+      await deleteTask(taskId);
+      setTasks((prev) => prev.filter((task) => task._id !== taskId));
+      // Show success message
+      setError({ type: 'success', message: 'Task deleted successfully' });
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
+    } catch (err) {
+      console.error("Error deleting task:", err);
+      setError({
+        type: 'error',
+        message: err.message || "Failed to delete task. Please try again."
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 pt-16">
@@ -178,9 +251,13 @@ const BoardDetail = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900 rounded-lg p-4">
-          <p className="text-sm text-red-600 dark:text-red-400 text-center">
-            {error}
+        <div className={`${
+          error.type === 'success' 
+            ? "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-900 text-green-600 dark:text-green-400" 
+            : "bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400"
+        } border rounded-lg p-4 mb-4 mx-4`}>
+          <p className="text-sm text-center">
+            {error.message}
           </p>
         </div>
       )}
@@ -234,9 +311,40 @@ const BoardDetail = () => {
                       onDragStart={(e) => handleDragStart(e, task._id)}
                       className="p-4 border rounded shadow-sm bg-white dark:bg-gray-700 border-gray-200 dark:border-gray-600 hover:shadow-md"
                     >
-                      <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                        {task.title}
-                      </h4>
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                          {task.title}
+                        </h4>
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditTaskData({
+                                id: task._id,
+                                title: task.title,
+                                description: task.description,
+                                status: task.status,
+                                priority: task.priority,
+                                subtasks: task.subtasks,
+                                deadline: task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : "",
+                              });
+                              setShowEditTaskModal(true);
+                            }}
+                            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors"
+                          >
+                            <FiEdit2 className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteTask(task._id);
+                            }}
+                            className="p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-colors"
+                          >
+                            <FiTrash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
+                          </button>
+                        </div>
+                      </div>
                       <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-2">
                         {task.description}
                       </p>
@@ -451,6 +559,88 @@ const BoardDetail = () => {
                   className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
                 >
                   Create
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Task Modal */}
+      {showEditTaskModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Edit Task
+              </h3>
+              <button
+                onClick={() => {
+                  setShowEditTaskModal(false);
+                  setEditTaskData({
+                    id: "",
+                    title: "",
+                    description: "",
+                    status: "NOT STARTED",
+                    priority: "medium",
+                    subtasks: [],
+                    deadline: "",
+                  });
+                }}
+                className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                aria-label="Close modal"
+              >
+                <FiX className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+              </button>
+            </div>
+            <form onSubmit={handleEditTask} className="space-y-4">
+              <input
+                type="text"
+                placeholder="Title"
+                value={editTaskData.title}
+                onChange={(e) =>
+                  setEditTaskData({ ...editTaskData, title: e.target.value })
+                }
+                required
+                className="w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+              />
+              <textarea
+                placeholder="Description"
+                rows={3}
+                value={editTaskData.description}
+                onChange={(e) =>
+                  setEditTaskData({
+                    ...editTaskData,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+              />
+              <select
+                value={editTaskData.priority}
+                onChange={(e) =>
+                  setEditTaskData({ ...editTaskData, priority: e.target.value })
+                }
+                className="w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+              </select>
+              <input
+                type="date"
+                value={editTaskData.deadline}
+                onChange={(e) =>
+                  setEditTaskData({ ...editTaskData, deadline: e.target.value })
+                }
+                className="w-full px-3 py-2 rounded border bg-white dark:bg-gray-700 dark:text-white border-gray-300 dark:border-gray-600"
+              />
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 transition-colors"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>
