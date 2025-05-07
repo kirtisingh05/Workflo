@@ -40,7 +40,7 @@ async function invite(req, res) {
 
   try {
     const existingUser = await User.get({ email: inviteEmail });
-    if (existingUser) {
+    if (existingUser && existingUser.length > 0) {
       const existingContributor = await Contributor.getOne(
         boardId,
         existingUser[0]._id,
@@ -130,7 +130,7 @@ async function decodeInviteHash(req, res) {
 async function acceptInvite(req, res) {
   const { boardId, userId } = req.params;
   const { role } = req.body;
-
+  console.log("Accepting invite for user:", userId, "to board:", boardId);
   try {
     const existingContributor = await Contributor.getOne(boardId, userId);
     if (existingContributor) {

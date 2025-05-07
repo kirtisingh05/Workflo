@@ -41,7 +41,7 @@ function AcceptInvite() {
     }
 
     decodeInviteHash();
-  }, [inviteHash, navigate, user]);
+  }, [inviteHash, navigate, user,authLoading]);
 
   const handleAccept = async () => {
     try {
