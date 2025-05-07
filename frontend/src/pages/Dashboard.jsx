@@ -23,6 +23,7 @@ import {
   FiArchive,
   FiEdit2,
   FiUsers,
+  FiX,
 } from "react-icons/fi";
 
 const Dashboard = () => {
@@ -163,6 +164,25 @@ const Dashboard = () => {
       setError("Error restoring board from trash");
       console.error("Error restoring board from trash:", error);
     }
+  };
+
+  const handleCloseNewBoardModal = () => {
+    setShowNewBoardModal(false);
+    setNewBoardData({
+      title: "",
+      description: "",
+      createdAt: new Date().toISOString().slice(0, 16),
+    });
+  };
+
+  const handleCloseEditBoardModal = () => {
+    setShowEditBoardModal(false);
+    setEditBoardData({
+      id: "",
+      title: "",
+      description: "",
+      createdAt: "",
+    });
   };
 
   if (loading) {
@@ -354,9 +374,18 @@ const Dashboard = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full transform transition-all">
               <div className="px-6 py-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Create New Board
-                </h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    Create New Board
+                  </h3>
+                  <button
+                    onClick={handleCloseNewBoardModal}
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    aria-label="Close modal"
+                  >
+                    <FiX className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
                 <form onSubmit={handleCreateBoard}>
                   <div className="space-y-4">
                     <div>
@@ -403,14 +432,7 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  <div className="mt-6 flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowNewBoardModal(false)}
-                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                  <div className="mt-6 flex justify-end">
                     <button
                       type="submit"
                       className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -429,9 +451,18 @@ const Dashboard = () => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full transform transition-all">
               <div className="px-6 py-4">
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">
-                  Edit Board
-                </h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    Edit Board
+                  </h3>
+                  <button
+                    onClick={handleCloseEditBoardModal}
+                    className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                    aria-label="Close modal"
+                  >
+                    <FiX className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                  </button>
+                </div>
                 <form onSubmit={handleEditBoard}>
                   <div className="space-y-4">
                     <div>
@@ -499,14 +530,7 @@ const Dashboard = () => {
                     </div>
                   </div>
 
-                  <div className="mt-6 flex justify-end space-x-3">
-                    <button
-                      type="button"
-                      onClick={() => setShowEditBoardModal(false)}
-                      className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
-                    >
-                      Cancel
-                    </button>
+                  <div className="mt-6 flex justify-end">
                     <button
                       type="submit"
                       className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
