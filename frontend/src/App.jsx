@@ -54,6 +54,14 @@ function App() {
                     </PrivateRoute>
                   }
                 />
+                <Route
+                  path="/profile/:userId"
+                  element={
+                    <PrivateRoute>
+                      <Profile />
+                    </PrivateRoute>
+                  }
+                />
                 <Route path="/accept-invite" element={<AcceptInvite />} />
                 <Route path="/sign-in" element={<SignIn />} />
                 <Route path="/sign-up" element={<SignUp />} />

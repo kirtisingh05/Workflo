@@ -12,7 +12,8 @@ import {
   FiX, 
   FiUsers,
   FiEdit2,
-  FiTrash2 
+  FiTrash2,
+  FiAlertTriangle
 } from "react-icons/fi";
 import { invite } from "../services/invite";
 
@@ -51,6 +52,9 @@ const BoardDetail = () => {
     subtasks: [],
     deadline: "",
   });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [taskToDelete, setTaskToDelete] = useState(null);
 
   const filteredContributors = contributors.filter((c) =>
     c.user.username.toLowerCase().includes(searchQuery),
@@ -187,19 +191,17 @@ const BoardDetail = () => {
   };
 
   const handleDeleteTask = async (taskId) => {
+    const task = tasks.find(t => t._id === taskId);
+    setTaskToDelete(task);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteTask = async () => {
     try {
-      // Custom confirm dialog
-      const taskToDelete = tasks.find(t => t._id === taskId);
-      const confirmDelete = window.confirm(
-        `Are you sure you want to permanently delete the task "${taskToDelete.title}"?\nThis action cannot be undone.`
-      );
-
-      if (!confirmDelete) {
-        return;
-      }
-
-      await deleteTask(taskId);
-      setTasks((prev) => prev.filter((task) => task._id !== taskId));
+      await deleteTask(taskToDelete._id);
+      setTasks((prev) => prev.filter((task) => task._id !== taskToDelete._id));
+      setShowDeleteConfirm(false);
+      setTaskToDelete(null);
       // Show success message
       setError({ type: 'success', message: 'Task deleted successfully' });
       
@@ -259,6 +261,40 @@ const BoardDetail = () => {
           <p className="text-sm text-center">
             {error.message}
           </p>
+        </div>
+      )}
+
+      {/* Delete Task Confirmation Modal */}
+      {showDeleteConfirm && taskToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+            <div className="flex items-center mb-4">
+              <FiAlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400 mr-2" />
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Delete Task
+              </h3>
+            </div>
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              Are you sure you want to delete "{taskToDelete.title}"? This action cannot be undone.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteConfirm(false);
+                  setTaskToDelete(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDeleteTask}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -487,24 +523,31 @@ const BoardDetail = () => {
                   />
                   <div className="overflow-y-auto flex-1 space-y-2 pr-1">
                     <ul className="space-y-2">
-                      {filteredContributors.map((c) => {
-                        {
-                          /*TODO: Navigate to user's profile instead of own*/
-                        }
-                        return (
-                          <li
-                            key={c._id}
-                            className="p-1 flex justify-between text-sm text-gray-700 dark:text-gray-300 truncate border border-zinc-300 rounded"
-                            onClick={() => navigate("/profile")}
-                          >
-                            <span>
-                              {c.user.username}{" "}
-                              {c.user._id === user._id && "| You"}
-                            </span>
-                            <span>{c.role}</span>
-                          </li>
-                        );
-                      })}
+                      {filteredContributors.map((c) => (
+                        <li
+                          key={c._id}
+                          className="p-2 flex justify-between items-center text-sm text-gray-700 dark:text-gray-300 border border-zinc-300 dark:border-zinc-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer group"
+                          onClick={() => navigate(`/profile/${c.user._id}`)}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-lg font-semibold text-blue-600 dark:text-blue-400">
+                              {c.user.username[0].toUpperCase()}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                {c.user.username}
+                                {c.user._id === user._id && " (You)"}
+                              </span>
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {c.user.email}
+                              </span>
+                            </div>
+                          </div>
+                          <span className="px-2 py-1 text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded">
+                            {c.role}
+                          </span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 </div>

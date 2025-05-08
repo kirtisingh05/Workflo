@@ -93,3 +93,16 @@ export const searchBoards = async (query) => {
     throw new Error(error.response?.data?.message || "Failed to search boards");
   }
 };
+
+export const permanentlyDeleteBoard = async (boardId) => {
+  try {
+    const response = await axios.delete(`/api/board/delete/${boardId}`, {
+      withCredentials: true
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.data?.message || "Failed to permanently delete board"
+    );
+  }
+};

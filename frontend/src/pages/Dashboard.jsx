@@ -7,6 +7,7 @@ import {
   moveToTrash,
   restoreFromTrash,
   updateBoard,
+  permanentlyDeleteBoard,
 } from "../services/boards";
 import {
   getContributors,
@@ -24,6 +25,7 @@ import {
   FiEdit2,
   FiUsers,
   FiX,
+  FiAlertTriangle,
 } from "react-icons/fi";
 
 const Dashboard = () => {
@@ -52,6 +54,8 @@ const Dashboard = () => {
   const [boardContributors, setBoardContributors] = useState({});
   const [showContributorsModal, setShowContributorsModal] = useState(false);
   const [selectedBoard, setSelectedBoard] = useState(null);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [boardToDelete, setBoardToDelete] = useState(null);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -166,6 +170,35 @@ const Dashboard = () => {
     }
   };
 
+  const handlePermanentDelete = async (boardId, boardTitle, e) => {
+    e.stopPropagation();
+    setBoardToDelete({ id: boardId, title: boardTitle });
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmPermanentDelete = async () => {
+    try {
+      await permanentlyDeleteBoard(boardToDelete.id);
+      setTrashedBoards((prev) => prev.filter((board) => board._id !== boardToDelete.id));
+      setError({
+        type: "success",
+        message: "Board permanently deleted successfully",
+      });
+      setShowDeleteConfirmModal(false);
+      setBoardToDelete(null);
+
+      setTimeout(() => {
+        setError(null);
+      }, 3000);
+    } catch (error) {
+      console.error("Error permanently deleting board:", error);
+      setError({
+        type: "error",
+        message: error.message || "Failed to permanently delete board",
+      });
+    }
+  };
+
   const handleCloseNewBoardModal = () => {
     setShowNewBoardModal(false);
     setNewBoardData({
@@ -250,12 +283,16 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Error message */}
+        {/* Error/Success message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-900 rounded-lg">
-            <p className="text-sm text-red-600 dark:text-red-400 text-center">
-              {error}
-            </p>
+          <div
+            className={`mb-6 p-4 ${
+              error.type === "success"
+                ? "bg-green-50 dark:bg-green-900/30 border-green-200 dark:border-green-900 text-green-600 dark:text-green-400"
+                : "bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400"
+            } border rounded-lg mx-4`}
+          >
+            <p className="text-sm text-center">{error.message}</p>
           </div>
         )}
 
@@ -370,6 +407,15 @@ const Dashboard = () => {
                         </>
                       )}
                     </button>
+                    {showTrashed && (
+                      <button
+                        onClick={(e) => handlePermanentDelete(board._id, board.title, e)}
+                        className="inline-flex items-center px-3 py-1 rounded-md text-sm transition-colors text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30"
+                      >
+                        <FiAlertTriangle className="mr-1 h-4 w-4" />
+                        Delete Forever
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -547,6 +593,43 @@ const Dashboard = () => {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {showDeleteConfirmModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Confirm Permanent Deletion
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-6">
+                Are you sure you want to PERMANENTLY delete "{boardToDelete.title}"?
+                This action CANNOT be undone and will delete:
+                <ul className="list-disc ml-6 mt-2">
+                  <li>All tasks in this board</li>
+                  <li>All contributor access</li>
+                  <li>All board data</li>
+                </ul>
+              </p>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirmModal(false);
+                    setBoardToDelete(null);
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-md transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmPermanentDelete}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md transition-colors"
+                >
+                  Delete Permanently
+                </button>
               </div>
             </div>
           </div>

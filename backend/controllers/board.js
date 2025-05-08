@@ -1,5 +1,6 @@
 import Board from "../models/board.js";
 import Contributor from "../models/contributor.js";
+import Task from "../models/task.js";
 
 function filterBuilder(query, userId, contributorIds) {
   const accessCondition = {
@@ -125,23 +126,45 @@ async function deleteBoard(req, res) {
   const userId = req.user_id;
 
   try {
+    // Check if user is board admin
     const contributor = await Contributor.getOne(id, userId);
     if (!contributor || contributor?.role !== "ADMIN") {
       return res
         .status(403)
-        .json({ message: "Unauthorized to delete the board" });
+        .json({ message: "Only board administrators can permanently delete boards" });
     }
 
-    const deletedBoard = await Board.remove(id);
-    if (!deletedBoard) {
+    // Get board to check if it exists and is in trash
+    const board = await Board.get(id);
+    if (!board) {
       return res.status(404).json({ message: `Board with id ${id} not found` });
     }
 
-    res
-      .status(200)
-      .json({ data: deletedBoard, message: "Board deleted successfully" });
+    if (!board.trashed) {
+      return res.status(400).json({ 
+        message: "Board must be moved to trash before permanent deletion" 
+      });
+    }
+
+    // Delete all associated tasks first
+    await Task.deleteMany({ board: id });
+
+    // Delete all contributor records
+    await Contributor.deleteMany({ board: id });
+
+    // Finally delete the board itself
+    const deletedBoard = await Board.remove(id);
+    
+    res.status(200).json({ 
+      data: deletedBoard, 
+      message: "Board and all associated data permanently deleted" 
+    });
   } catch (error) {
-    res.status(500).json({ message: "Error while deleting board" });
+    console.error("Error deleting board:", error);
+    res.status(500).json({ 
+      message: "Error while deleting board",
+      error: error.message 
+    });
   }
 }
 

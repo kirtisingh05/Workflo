@@ -116,6 +116,15 @@ async function remove(id) {
   }
 }
 
+async function deleteMany(filter) {
+  try {
+    const result = await Contributor.deleteMany(filter);
+    return result;
+  } catch (error) {
+    throw new Error(`Error deleting multiple contributors: ${error.message}`);
+  }
+}
+
 export default {
   getAllByBoard,
   getAllByUser,
@@ -123,4 +132,5 @@ export default {
   create,
   update,
   remove,
+  deleteMany,
 };

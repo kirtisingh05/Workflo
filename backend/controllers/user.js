@@ -49,8 +49,34 @@ async function removeUser(req, res) {
   }
 }
 
+async function getUser(req, res) {
+  try {
+    const { id } = req.params;
+    const userDoc = await User.get({ _id: id });
+    const user = userDoc[0];
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Only send non-sensitive user data
+    const userData = {
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      profile_picture: user.profile_picture,
+    };
+
+    res.status(200).json(userData);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    res.status(500).json({ message: "Error fetching user details" });
+  }
+}
+
 export default {
   me,
   updateUser,
   removeUser,
+  getUser,
 };

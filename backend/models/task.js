@@ -131,10 +131,20 @@ async function remove(id) {
   }
 }
 
+async function deleteMany(filter) {
+  try {
+    const result = await Task.deleteMany(filter);
+    return result;
+  } catch (error) {
+    throw new Error(`Error deleting multiple tasks: ${error.message}`);
+  }
+}
+
 export default {
   get,
   getAll,
   create,
   update,
   remove,
+  deleteMany,
 };
