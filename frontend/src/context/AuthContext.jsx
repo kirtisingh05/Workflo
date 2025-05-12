@@ -9,15 +9,30 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchUserInfo = async () => {
-      const storedUser = localStorage.getItem("user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+      try {
+        const res = await axios.get("/api/user/me", { withCredentials: true });
+        const user = res.data;
+        setUser(user);
+        setLoading(loading);
+      } catch (error) {
+        if (error.response && error.response.status === 401) {
+          logout();
+        } else {
+          console.log("Error fetching user");
+        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchUserInfo();
-  }, []);
+
+    const interval = setInterval(() => {
+      fetchUserInfo();
+    }, 1000 * 50);
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const saveUserInfo = async () => {
     try {
