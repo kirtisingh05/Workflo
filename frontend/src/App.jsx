@@ -18,12 +18,12 @@ function App() {
   };
 
   return (
-    <AuthProvider>
-      <div
-        className={`min-h-screen font-sans antialiased ${isDarkMode ? "dark" : ""}`}
-      >
-        <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
-          <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
+        <div
+          className={`min-h-screen font-sans antialiased ${isDarkMode ? "dark" : ""}`}
+        >
+          <div className="flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white transition-colors duration-200">
             <Header
               onToggleDarkMode={handleToggleDarkMode}
               isDarkMode={isDarkMode}
@@ -59,10 +59,10 @@ function App() {
                 <Route path="/sign-up" element={<SignUp />} />
               </Routes>
             </main>
-          </BrowserRouter>
+          </div>
         </div>
-      </div>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
